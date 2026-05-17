@@ -6,11 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate": "bash scripts/migrate.sh",
+    "turso:push": "bash scripts/turso-push.sh"
   },
   "dependencies": {
     "@formisch/react": "^0.4.5",
     "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-libsql": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@tanstack/react-query": "^5.100.10",
     "better-auth": "^1.6.11",
