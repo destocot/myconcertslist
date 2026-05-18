@@ -78,7 +78,6 @@ export default function SignUpPage() {
                   {...field.props}
                   id='name'
                   value={field.input}
-                  placeholder='Your name'
                 />
                 {field.errors && (
                   <p className='text-destructive text-xs'>{field.errors[0]}</p>
@@ -95,7 +94,6 @@ export default function SignUpPage() {
                   {...field.props}
                   id='username'
                   value={field.input}
-                  placeholder='e.g. destocot'
                   autoComplete='username'
                 />
                 {field.errors && (
@@ -114,7 +112,6 @@ export default function SignUpPage() {
                   id='email'
                   value={field.input}
                   type='email'
-                  placeholder='you@example.com'
                 />
                 {field.errors && (
                   <p className='text-destructive text-xs'>{field.errors[0]}</p>

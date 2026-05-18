@@ -20,7 +20,7 @@ import { Music2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const SignInSchema = v.object({
-  email: v.pipe(v.string(), v.nonEmpty('Required'), v.email('Invalid email')),
+  username: v.pipe(v.string(), v.nonEmpty('Required')),
   password: v.pipe(v.string(), v.nonEmpty('Required')),
 })
 
@@ -28,14 +28,12 @@ export default function SignInPage() {
   const router = useRouter()
   const form = useForm({
     schema: SignInSchema,
-    initialInput: { email: '', password: '' },
+    initialInput: { username: '', password: '' },
   })
 
-  const handleSubmit = async (
-    output: v.InferOutput<typeof SignInSchema>,
-  ) => {
-    const result = await signIn.email({
-      email: output.email,
+  const handleSubmit = async (output: v.InferOutput<typeof SignInSchema>) => {
+    const result = await signIn.username({
+      username: output.username,
       password: output.password,
     })
 
@@ -59,16 +57,15 @@ export default function SignInPage() {
       </CardHeader>
       <CardContent>
         <Form of={form} onSubmit={handleSubmit} className='space-y-4'>
-          <Field of={form} path={['email']}>
+          <Field of={form} path={['username']}>
             {(field) => (
               <div className='space-y-1.5'>
-                <Label htmlFor='email'>Email</Label>
+                <Label htmlFor='username'>Username</Label>
                 <Input
                   {...field.props}
-                  id='email'
+                  id='username'
                   value={field.input}
-                  type='email'
-                  placeholder='you@example.com'
+                  autoComplete='username'
                 />
                 {field.errors && (
                   <p className='text-destructive text-xs'>{field.errors[0]}</p>
@@ -101,7 +98,10 @@ export default function SignInPage() {
       </CardContent>
       <CardFooter className='justify-center text-sm'>
         <span className='text-muted-foreground'>No account?&nbsp;</span>
-        <Link href='/sign-up' className='text-primary font-medium hover:underline'>
+        <Link
+          href='/sign-up'
+          className='text-primary font-medium hover:underline'
+        >
           Sign up
         </Link>
       </CardFooter>
