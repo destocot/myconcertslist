@@ -12,10 +12,12 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name          String
-  email         String  @unique
-  emailVerified Boolean @default(false) @map("email_verified")
-  image         String?
+  name            String
+  email           String  @unique
+  emailVerified   Boolean @default(false) @map("email_verified")
+  image           String?
+  username        String? @unique
+  displayUsername String? @map("display_username")
 
   sessions Session[]
   accounts Account[]

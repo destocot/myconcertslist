@@ -10,17 +10,17 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 interface PageProps {
-  readonly params: Promise<{ profileId: string }>
+  readonly params: Promise<{ username: string }>
 }
 
 export default async function Page({ params }: PageProps) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect('/sign-in')
 
-  const { profileId } = await params
+  const { username } = await params
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: profileId },
+  const profile = await prisma.profile.findFirst({
+    where: { user: { username } },
     include: { user: true },
   })
 
@@ -61,7 +61,7 @@ export default async function Page({ params }: PageProps) {
               {initials}
             </div>
             <Button asChild variant='outline' size='sm' className='mb-1'>
-              <Link href={`/concertlist/${profile.id}`}>View list</Link>
+              <Link href={`/concertlist/${profile.user.username}`}>View list</Link>
             </Button>
           </div>
           <div className='mt-3'>

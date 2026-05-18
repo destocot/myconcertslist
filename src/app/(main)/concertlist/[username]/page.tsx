@@ -5,17 +5,17 @@ import prisma from '@/lib/prisma'
 import { ConcertList } from '@/components/concerts/concert-list'
 
 interface PageProps {
-  readonly params: Promise<{ profileId: string }>
+  readonly params: Promise<{ username: string }>
 }
 
 export default async function Page({ params }: PageProps) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) redirect('/sign-in')
 
-  const { profileId } = await params
+  const { username } = await params
 
-  const profile = await prisma.profile.findUnique({
-    where: { id: profileId },
+  const profile = await prisma.profile.findFirst({
+    where: { user: { username } },
   })
 
   if (!profile || profile.userId !== session.user.id) notFound()

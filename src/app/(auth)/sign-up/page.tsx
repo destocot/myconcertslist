@@ -21,6 +21,12 @@ import { toast } from 'sonner'
 
 const SignUpSchema = v.object({
   name: v.pipe(v.string(), v.nonEmpty('Required')),
+  username: v.pipe(
+    v.string(),
+    v.nonEmpty('Required'),
+    v.minLength(3, 'At least 3 characters'),
+    v.regex(/^\w+$/, 'Only letters, numbers, underscores'),
+  ),
   email: v.pipe(v.string(), v.nonEmpty('Required'), v.email('Invalid email')),
   password: v.pipe(
     v.string(),
@@ -33,12 +39,13 @@ export default function SignUpPage() {
   const router = useRouter()
   const form = useForm({
     schema: SignUpSchema,
-    initialInput: { name: '', email: '', password: '' },
+    initialInput: { name: '', username: '', email: '', password: '' },
   })
 
   const handleSubmit = async (output: v.InferOutput<typeof SignUpSchema>) => {
     const result = await signUp.email({
       name: output.name,
+      username: output.username,
       email: output.email,
       password: output.password,
     })
@@ -72,6 +79,24 @@ export default function SignUpPage() {
                   id='name'
                   value={field.input}
                   placeholder='Your name'
+                />
+                {field.errors && (
+                  <p className='text-destructive text-xs'>{field.errors[0]}</p>
+                )}
+              </div>
+            )}
+          </Field>
+
+          <Field of={form} path={['username']}>
+            {(field) => (
+              <div className='space-y-1.5'>
+                <Label htmlFor='username'>Username</Label>
+                <Input
+                  {...field.props}
+                  id='username'
+                  value={field.input}
+                  placeholder='e.g. destocot'
+                  autoComplete='username'
                 />
                 {field.errors && (
                   <p className='text-destructive text-xs'>{field.errors[0]}</p>
