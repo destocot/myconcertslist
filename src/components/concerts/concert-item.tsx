@@ -22,8 +22,8 @@ interface ConcertItemProps {
   concert: Concert
   isPast?: boolean
   showConfirm?: boolean
-  onUpdate: (id: string, data: ConcertInput) => Promise<void>
-  onDelete: (id: string) => Promise<void>
+  onUpdate?: (id: string, data: ConcertInput) => Promise<void>
+  onDelete?: (id: string) => Promise<void>
   onConfirm?: (id: string) => Promise<void>
 }
 
@@ -69,58 +69,64 @@ export const ConcertItem = ({
         </div>
       </div>
 
-      <div className='flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
-        {showConfirm && onConfirm && (
-          <Button
-            variant='ghost'
-            size='icon'
-            onClick={() => onConfirm(concert.id)}
-            title='Confirm attendance'
-          >
-            <CheckCheck className='text-primary' />
-          </Button>
-        )}
-
-        <ConcertFormDialog
-          concert={concert}
-          onSubmit={(data) => onUpdate(concert.id, data)}
-          trigger={
-            <Button variant='ghost' size='icon'>
-              <Pencil />
-            </Button>
-          }
-        />
-
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
+      {(showConfirm || onUpdate || onDelete) && (
+        <div className='flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+          {showConfirm && onConfirm && (
             <Button
               variant='ghost'
               size='icon'
-              className='text-destructive hover:text-destructive'
+              onClick={() => onConfirm(concert.id)}
+              title='Confirm attendance'
             >
-              <Trash2 />
+              <CheckCheck className='text-primary' />
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete concert?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Remove{' '}
-                <span className='text-foreground font-medium'>
-                  {concert.artist}
-                </span>{' '}
-                from your list. This cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onDelete(concert.id)}>
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+          )}
+
+          {onUpdate && (
+            <ConcertFormDialog
+              concert={concert}
+              onSubmit={(data) => onUpdate(concert.id, data)}
+              trigger={
+                <Button variant='ghost' size='icon'>
+                  <Pencil />
+                </Button>
+              }
+            />
+          )}
+
+          {onDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='text-destructive hover:text-destructive'
+                >
+                  <Trash2 />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete concert?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Remove{' '}
+                    <span className='text-foreground font-medium'>
+                      {concert.artist}
+                    </span>{' '}
+                    from your list. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete(concert.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -7,6 +7,7 @@ export const findAllConcerts = (profileId: string) => {
   })
 }
 
+
 export const createConcert = (data: Prisma.ConcertUncheckedCreateInput) => {
   return prisma.concert.create({ data })
 }

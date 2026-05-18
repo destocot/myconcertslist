@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { concertKeys } from '@/resources/concerts/keys'
-import { fetchConcertsAction } from '@/resources/concerts/actions/fetch-concerts'
 import { createConcertAction } from '@/resources/concerts/actions/create-concert'
 import { updateConcertAction } from '@/resources/concerts/actions/update-concert'
 import { removeConcertAction } from '@/resources/concerts/actions/remove-concert'
@@ -34,17 +33,26 @@ const splitConcerts = (concerts: Concert[], today: Date) => ({
     .sort((a, b) => +new Date(a.performedAt) - +new Date(b.performedAt)),
 })
 
-export const ConcertList = () => {
+interface ConcertListProps {
+  isOwner: boolean
+  username: string
+}
+
+export const ConcertList = ({ isOwner, username }: ConcertListProps) => {
   const queryClient = useQueryClient()
   const [today, setToday] = useState<Date>(getToday)
 
-  const { data: concerts = [], isLoading } = useQuery({
-    queryKey: concertKeys.lists(),
-    queryFn: fetchConcertsAction,
-  })
+  const queryKey = isOwner ? concertKeys.lists() : concertKeys.public(username)
+  const queryFn = isOwner
+    ? () => fetch('/api/concerts').then((r) => r.json() as Promise<Concert[]>)
+    : () =>
+        fetch(`/api/concerts/${username}`).then(
+          (r) => r.json() as Promise<Concert[]>,
+        )
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: concertKeys.lists() })
+  const { data: concerts = [], isLoading } = useQuery({ queryKey, queryFn })
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey })
 
   const createMutation = useMutation({
     mutationFn: (data: ConcertInput) => createConcertAction(data),
@@ -94,7 +102,7 @@ export const ConcertList = () => {
       data: {
         artist: concert.artist,
         venue: concert.venue ?? '',
-        performedAt: concert.performedAt.toISOString().slice(0, 10),
+        performedAt: new Date(concert.performedAt).toISOString().slice(0, 10),
         status: 'confirmed',
       },
     })
@@ -108,24 +116,24 @@ export const ConcertList = () => {
     <div className='mx-auto w-full max-w-4xl px-4 py-6'>
       <div className='mb-5 flex items-center justify-between'>
         <h1 className='text-xl font-bold'>Concert List</h1>
-        <ConcertFormDialog
-          onSubmit={handleCreate}
-          trigger={
-            <Button size='sm' className='gap-1.5'>
-              <Plus className='h-4 w-4' />
-              Add concert
-            </Button>
-          }
-        />
+        {isOwner && (
+          <ConcertFormDialog
+            onSubmit={handleCreate}
+            trigger={
+              <Button size='sm' className='gap-1.5'>
+                <Plus className='h-4 w-4' />
+                Add concert
+              </Button>
+            }
+          />
+        )}
       </div>
 
       <Tabs defaultValue='upcoming' onValueChange={handleTabChange}>
         <TabsList className='mb-4'>
           <TabsTrigger value='upcoming'>
             Upcoming
-            {upcoming.length > 0 && (
-              <TabCount count={upcoming.length} />
-            )}
+            {upcoming.length > 0 && <TabCount count={upcoming.length} />}
           </TabsTrigger>
           <TabsTrigger value='past'>
             Past
@@ -147,8 +155,8 @@ export const ConcertList = () => {
               <ConcertTabPanel
                 concerts={upcoming}
                 emptyLabel='No upcoming concerts'
-                onUpdate={handleUpdate}
-                onDelete={handleDelete}
+                onUpdate={isOwner ? handleUpdate : undefined}
+                onDelete={isOwner ? handleDelete : undefined}
               />
             </TabsContent>
             <TabsContent value='past'>
@@ -156,8 +164,8 @@ export const ConcertList = () => {
                 concerts={past}
                 emptyLabel='No past concerts'
                 forceIsPast
-                onUpdate={handleUpdate}
-                onDelete={handleDelete}
+                onUpdate={isOwner ? handleUpdate : undefined}
+                onDelete={isOwner ? handleDelete : undefined}
               />
             </TabsContent>
             <TabsContent value='maybe'>
@@ -166,9 +174,9 @@ export const ConcertList = () => {
                 emptyLabel='No maybe concerts'
                 isMaybeTab
                 today={today}
-                onUpdate={handleUpdate}
-                onDelete={handleDelete}
-                onConfirm={handleConfirm}
+                onUpdate={isOwner ? handleUpdate : undefined}
+                onDelete={isOwner ? handleDelete : undefined}
+                onConfirm={isOwner ? handleConfirm : undefined}
               />
             </TabsContent>
           </>
@@ -190,8 +198,8 @@ interface ConcertTabPanelProps {
   forceIsPast?: boolean
   isMaybeTab?: boolean
   today?: Date
-  onUpdate: (id: string, data: ConcertInput) => Promise<void>
-  onDelete: (id: string) => Promise<void>
+  onUpdate?: (id: string, data: ConcertInput) => Promise<void>
+  onDelete?: (id: string) => Promise<void>
   onConfirm?: (id: string) => Promise<void>
 }
 
@@ -222,15 +230,11 @@ const ConcertTabPanel = ({
       {concerts.map((concert, i) => {
         const isPast =
           forceIsPast ||
-          (isMaybeTab && today
-            ? new Date(concert.performedAt) < today
-            : false)
+          (isMaybeTab && today ? new Date(concert.performedAt) < today : false)
 
         const currentMonth = getMonthLabel(new Date(concert.performedAt))
         const prevMonth =
-          i > 0
-            ? getMonthLabel(new Date(concerts[i - 1].performedAt))
-            : null
+          i > 0 ? getMonthLabel(new Date(concerts[i - 1].performedAt)) : null
         const showMonthDivider = currentMonth !== prevMonth
 
         return (
@@ -245,7 +249,7 @@ const ConcertTabPanel = ({
             <ConcertItem
               concert={concert}
               isPast={isPast}
-              showConfirm={isMaybeTab}
+              showConfirm={isMaybeTab && !!onConfirm}
               onUpdate={onUpdate}
               onDelete={onDelete}
               onConfirm={onConfirm}

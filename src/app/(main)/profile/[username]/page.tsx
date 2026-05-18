@@ -1,8 +1,6 @@
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
-import { redirect, notFound } from 'next/navigation'
-import prisma from '@/lib/prisma'
+import { getSession, requireProfile, assertAccess } from '@/lib/server-utils'
 import { findAllConcerts } from '@/resources/concerts/queries'
+import { ProfileVisibilityToggle } from '@/components/profile/profile-visibility-toggle'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { CalendarDays, Music2, ListMusic, Bookmark } from 'lucide-react'
@@ -14,17 +12,12 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session) redirect('/sign-in')
-
   const { username } = await params
-
-  const profile = await prisma.profile.findFirst({
-    where: { user: { username } },
-    include: { user: true },
-  })
-
-  if (!profile || profile.userId !== session.user.id) notFound()
+  const [session, profile] = await Promise.all([
+    getSession(),
+    requireProfile(username),
+  ])
+  const isOwner = assertAccess(profile, session)
 
   const concerts = await findAllConcerts(profile.id)
 
@@ -60,9 +53,12 @@ export default async function Page({ params }: PageProps) {
             <div className='bg-primary text-primary-foreground -mt-10 flex h-20 w-20 items-center justify-center rounded-full border-4 border-card text-2xl font-bold'>
               {initials}
             </div>
-            <Button asChild variant='outline' size='sm' className='mb-1'>
-              <Link href={`/concertlist/${profile.user.username}`}>View list</Link>
-            </Button>
+            <div className='mb-1 flex items-center gap-3'>
+              {isOwner && <ProfileVisibilityToggle isPublic={profile.isPublic} />}
+              <Button asChild variant='outline' size='sm'>
+                <Link href={`/concertlist/${profile.user.username}`}>View list</Link>
+              </Button>
+            </div>
           </div>
           <div className='mt-3'>
             <h1 className='text-xl font-bold'>{profile.user.name}</h1>

@@ -37,7 +37,7 @@ export const ConcertFormDialog = ({
       ? {
           artist: concert.artist,
           venue: concert.venue ?? '',
-          performedAt: concert.performedAt.toISOString().slice(0, 10),
+          performedAt: new Date(concert.performedAt).toISOString().slice(0, 10),
           status: concert.status as 'confirmed' | 'maybe',
         }
       : {

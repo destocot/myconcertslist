@@ -1,7 +1,4 @@
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
-import { redirect, notFound } from 'next/navigation'
-import prisma from '@/lib/prisma'
+import { getSession, requireProfile, assertAccess } from '@/lib/server-utils'
 import { ConcertList } from '@/components/concerts/concert-list'
 
 interface PageProps {
@@ -9,16 +6,12 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session) redirect('/sign-in')
-
   const { username } = await params
+  const [session, profile] = await Promise.all([
+    getSession(),
+    requireProfile(username),
+  ])
+  const isOwner = assertAccess(profile, session)
 
-  const profile = await prisma.profile.findFirst({
-    where: { user: { username } },
-  })
-
-  if (!profile || profile.userId !== session.user.id) notFound()
-
-  return <ConcertList />
+  return <ConcertList isOwner={isOwner} username={username} />
 }
