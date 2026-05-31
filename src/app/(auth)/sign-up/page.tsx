@@ -16,7 +16,7 @@ import {
 import { signUp } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, Music2 } from 'lucide-react'
+import { Loader2Icon, Music2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 
 const SignUpSchema = v.object({
@@ -63,7 +63,7 @@ export default function SignUpPage() {
     <Card className='w-full max-w-sm'>
       <CardHeader className='text-center'>
         <div className='bg-primary text-primary-foreground mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full'>
-          <Music2 className='h-5 w-5' />
+          <Music2Icon className='h-5 w-5' />
         </div>
         <CardTitle>MyConcertList</CardTitle>
         <CardDescription>Create your account</CardDescription>
@@ -140,7 +140,7 @@ export default function SignUpPage() {
           <Button type='submit' className='w-full' disabled={form.isSubmitting}>
             {form.isSubmitting ? (
               <>
-                <Loader2 className='animate-spin' />
+                <Loader2Icon className='animate-spin' />
                 Creating account…
               </>
             ) : (

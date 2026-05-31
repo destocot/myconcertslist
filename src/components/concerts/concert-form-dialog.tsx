@@ -17,7 +17,7 @@ import { ConcertSchema } from '@/resources/concerts/validators'
 import type { ConcertInput } from '@/resources/concerts/validators'
 import type { ConcertWithOpeners } from '@/resources/concerts/queries'
 import { useState } from 'react'
-import { X } from 'lucide-react'
+import { XIcon } from 'lucide-react'
 
 interface ConcertFormDialogProps {
   concert?: ConcertWithOpeners
@@ -41,6 +41,7 @@ export const ConcertFormDialog = ({
     initialInput: concert
       ? {
           headliner: concert.headliner,
+          tourName: concert.tourName ?? '',
           venue: concert.venue ?? '',
           performedAt: new Date(concert.performedAt).toISOString().slice(0, 10),
           time: (() => {
@@ -55,6 +56,7 @@ export const ConcertFormDialog = ({
         }
       : {
           headliner: '',
+          tourName: '',
           venue: '',
           performedAt: new Date().toISOString().slice(0, 10),
           time: '',
@@ -109,6 +111,25 @@ export const ConcertFormDialog = ({
                 {field.errors && (
                   <p className='text-destructive text-xs'>{field.errors[0]}</p>
                 )}
+              </div>
+            )}
+          </Field>
+
+          <Field of={form} path={['tourName']}>
+            {(field) => (
+              <div className='space-y-1.5'>
+                <Label htmlFor='tourName'>
+                  Tour name{' '}
+                  <span className='text-muted-foreground font-normal'>
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  {...field.props}
+                  id='tourName'
+                  value={field.input ?? ''}
+                  placeholder='e.g. Blurryface Tour'
+                />
               </div>
             )}
           </Field>
@@ -205,7 +226,7 @@ export const ConcertFormDialog = ({
                       onClick={() => removeOpener(name)}
                       className='text-secondary-foreground/60 hover:text-secondary-foreground'
                     >
-                      <X className='h-3 w-3' />
+                      <XIcon className='h-3 w-3' />
                     </button>
                   </span>
                 ))}

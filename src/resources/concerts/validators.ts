@@ -2,6 +2,7 @@ import * as v from 'valibot'
 
 export const ConcertSchema = v.object({
   headliner: v.pipe(v.string(), v.nonEmpty('Headliner is required')),
+  tourName: v.optional(v.pipe(v.string(), v.trim())),
   venue: v.optional(v.pipe(v.string(), v.trim())),
   performedAt: v.pipe(v.string(), v.nonEmpty('Date is required')),
   time: v.optional(v.union([

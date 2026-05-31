@@ -28,6 +28,7 @@ export const updateConcertAction = async (id: string, input: unknown) => {
   revalidatePath('/')
   return updateConcert(id, {
     headliner: data.headliner,
+    tourName: data.tourName || null,
     venue: data.venue || null,
     performedAt: new Date(`${data.performedAt}T${data.time || '00:00'}:00.000Z`),
     status: data.status,

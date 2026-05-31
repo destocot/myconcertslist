@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import type { ConcertInput } from '@/resources/concerts/validators'
-import { MapPin, Calendar, Pencil, Trash2, CheckCheck } from 'lucide-react'
+import { MapPinIcon, CalendarIcon, PencilIcon, Trash2Icon, CheckCheckIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ConcertItemProps {
@@ -47,18 +47,41 @@ export const ConcertItem = ({
   return (
     <div
       className={cn(
-        'bg-card group flex items-center gap-4 border-b px-4 py-3.5 last:border-b-0',
-        isPast && 'opacity-50',
+        'bg-card group flex items-center gap-4 border-b px-4 py-3.5 transition-colors last:border-b-0 hover:bg-muted/20',
       )}
     >
-      <div className='bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded text-sm font-bold'>
-        {concert.headliner.slice(0, 2).toUpperCase()}
+      <div
+        className={cn(
+          'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold',
+          isPast
+            ? 'bg-muted text-muted-foreground/60'
+            : 'bg-primary/10 text-primary',
+        )}
+      >
+        {concert.headliner.replace(/[^\p{L}\p{N}\s]/gu, '').trim().slice(0, 2).toUpperCase()}
       </div>
 
       <div className='min-w-0 flex-1'>
-        <p className='text-foreground truncate font-semibold leading-snug'>
-          {concert.headliner}
-        </p>
+        <div className='flex items-start justify-between gap-2'>
+          <p
+            className={cn(
+              'truncate font-semibold leading-snug',
+              isPast ? 'text-foreground/50' : 'text-foreground',
+            )}
+          >
+            {concert.headliner}
+          </p>
+          {concert.status === 'maybe' && (
+            <span className='bg-muted text-muted-foreground shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium'>
+              maybe
+            </span>
+          )}
+        </div>
+        {concert.tourName && (
+          <p className='text-muted-foreground mt-0.5 truncate text-xs italic'>
+            {concert.tourName}
+          </p>
+        )}
         {concert.openers.length > 0 && (
           <p className='text-muted-foreground mt-0.5 truncate text-xs'>
             w/ {concert.openers.map((o) => o.name).join(', ')}
@@ -67,12 +90,12 @@ export const ConcertItem = ({
         <div className='text-muted-foreground mt-1 flex items-center gap-3 text-xs'>
           {concert.venue && (
             <span className='flex items-center gap-1 truncate'>
-              <MapPin className='h-3 w-3 shrink-0' />
+              <MapPinIcon className='h-3 w-3 shrink-0' />
               {concert.venue}
             </span>
           )}
           <span className='flex shrink-0 items-center gap-1'>
-            <Calendar className='h-3 w-3' />
+            <CalendarIcon className='h-3 w-3' />
             {formattedDate}
             {formattedTime && (
               <span className='text-muted-foreground/70'>· {formattedTime}</span>
@@ -90,7 +113,7 @@ export const ConcertItem = ({
               onClick={() => onConfirm(concert.id)}
               title='Confirm attendance'
             >
-              <CheckCheck className='text-primary' />
+              <CheckCheckIcon className='text-primary' />
             </Button>
           )}
 
@@ -100,7 +123,7 @@ export const ConcertItem = ({
               onSubmit={(data) => onUpdate(concert.id, data)}
               trigger={
                 <Button variant='ghost' size='icon'>
-                  <Pencil />
+                  <PencilIcon />
                 </Button>
               }
             />
@@ -114,7 +137,7 @@ export const ConcertItem = ({
                   size='icon'
                   className='text-destructive hover:text-destructive'
                 >
-                  <Trash2 />
+                  <Trash2Icon />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>

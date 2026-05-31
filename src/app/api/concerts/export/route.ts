@@ -27,6 +27,7 @@ export const GET = async () => {
         : ''
       return [
         cell(c.headliner),
+        cell(c.tourName ?? ''),
         cell(c.openers.map((o) => o.name).join(', ')),
         cell(c.venue ?? ''),
         cell(d.toISOString().slice(0, 10)),
@@ -36,7 +37,7 @@ export const GET = async () => {
       ].join(',')
     })
 
-  const csv = ['headliner,openers,venue,date,time,status,added_on', ...rows].join('\r\n')
+  const csv = ['headliner,tour_name,openers,venue,date,time,status,added_on', ...rows].join('\r\n')
 
   return new Response(csv, {
     headers: {

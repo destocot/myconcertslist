@@ -99,6 +99,7 @@ model Concert {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   headliner   String
+  tourName    String?  @map("tour_name")
   venue       String?
   performedAt DateTime @map("performed_at")
   status      String   @default("confirmed")

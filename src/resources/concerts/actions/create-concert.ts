@@ -19,6 +19,7 @@ export const createConcertAction = async (input: unknown) => {
 
   const concert = await createConcert({
     headliner: data.headliner,
+    tourName: data.tourName || null,
     venue: data.venue || null,
     performedAt: new Date(`${data.performedAt}T${data.time || '00:00'}:00.000Z`),
     status: data.status,

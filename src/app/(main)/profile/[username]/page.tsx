@@ -3,7 +3,7 @@ import { findAllConcerts } from '@/resources/concerts/queries'
 import { ProfileVisibilityToggle } from '@/components/profile/profile-visibility-toggle'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { CalendarDays, Music2, ListMusic, Bookmark, Download } from 'lucide-react'
+import { CalendarDaysIcon, Music2Icon, ListMusicIcon, BookmarkIcon, DownloadIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -58,7 +58,7 @@ export default async function Page({ params }: PageProps) {
               {isOwner && (
                 <Button asChild variant='outline' size='sm'>
                   <a href='/api/concerts/export' download>
-                    <Download className='h-3.5 w-3.5' />
+                    <DownloadIcon className='h-3.5 w-3.5' />
                     Export CSV
                   </a>
                 </Button>
@@ -71,7 +71,7 @@ export default async function Page({ params }: PageProps) {
           <div className='mt-3'>
             <h1 className='text-xl font-bold'>{profile.user.name}</h1>
             <p className='text-muted-foreground flex items-center gap-1.5 text-sm'>
-              <CalendarDays className='h-3.5 w-3.5' />
+              <CalendarDaysIcon className='h-3.5 w-3.5' />
               Member since {memberSince}
             </p>
           </div>
@@ -80,17 +80,17 @@ export default async function Page({ params }: PageProps) {
 
           <div className='grid grid-cols-3 gap-4 text-center'>
             <StatCard
-              icon={<Music2 className='mx-auto mb-1 h-5 w-5' />}
+              icon={<Music2Icon className='mx-auto mb-1 h-5 w-5' />}
               label='Upcoming'
               value={upcoming}
             />
             <StatCard
-              icon={<ListMusic className='mx-auto mb-1 h-5 w-5' />}
+              icon={<ListMusicIcon className='mx-auto mb-1 h-5 w-5' />}
               label='Past'
               value={past}
             />
             <StatCard
-              icon={<Bookmark className='mx-auto mb-1 h-5 w-5' />}
+              icon={<BookmarkIcon className='mx-auto mb-1 h-5 w-5' />}
               label='Maybe'
               value={maybe}
             />

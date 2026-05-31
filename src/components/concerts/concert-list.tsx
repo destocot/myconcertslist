@@ -12,7 +12,7 @@ import { updateConcertAction } from '@/resources/concerts/actions/update-concert
 import { removeConcertAction } from '@/resources/concerts/actions/remove-concert'
 import type { ConcertInput } from '@/resources/concerts/validators'
 import { toast } from 'sonner'
-import { Plus, Music2 } from 'lucide-react'
+import { PlusIcon, Music2Icon } from 'lucide-react'
 import { Fragment, useState } from 'react'
 
 const getToday = (): Date => {
@@ -121,7 +121,7 @@ export const ConcertList = ({ isOwner, username }: ConcertListProps) => {
             onSubmit={handleCreate}
             trigger={
               <Button size='sm' className='gap-1.5'>
-                <Plus className='h-4 w-4' />
+                <PlusIcon className='h-4 w-4' />
                 Add concert
               </Button>
             }
@@ -216,7 +216,7 @@ const ConcertTabPanel = ({
   if (concerts.length === 0) {
     return (
       <div className='bg-card rounded py-16 text-center'>
-        <Music2 className='text-muted-foreground/40 mx-auto mb-3 h-10 w-10' />
+        <Music2Icon className='text-muted-foreground/40 mx-auto mb-3 h-10 w-10' />
         <p className='text-muted-foreground text-sm'>{emptyLabel}</p>
       </div>
     )
