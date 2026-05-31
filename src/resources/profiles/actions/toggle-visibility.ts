@@ -1,11 +1,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { requireSession } from '@/lib/server-utils'
+import { getSession } from '@/lib/server-utils'
 import prisma from '@/lib/prisma'
 
 export const toggleVisibilityAction = async () => {
-  const session = await requireSession()
+  const session = await getSession()
+  if (!session) throw new Error('Unauthorized')
 
   const profile = await prisma.profile.findUniqueOrThrow({
     where: { userId: session.user.id },

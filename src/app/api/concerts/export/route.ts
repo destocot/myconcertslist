@@ -19,17 +19,24 @@ export const GET = async () => {
 
   const rows = concerts
     .sort((a, b) => +new Date(a.performedAt) - +new Date(b.performedAt))
-    .map((c) =>
-      [
-        cell(c.artist),
+    .map((c) => {
+      const d = new Date(c.performedAt)
+      const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0
+      const time = hasTime
+        ? `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
+        : ''
+      return [
+        cell(c.headliner),
+        cell(c.openers.map((o) => o.name).join(', ')),
         cell(c.venue ?? ''),
-        cell(new Date(c.performedAt).toISOString().slice(0, 10)),
+        cell(d.toISOString().slice(0, 10)),
+        cell(time),
         cell(c.status),
         cell(new Date(c.createdAt).toISOString().slice(0, 10)),
-      ].join(','),
-    )
+      ].join(',')
+    })
 
-  const csv = ['artist,venue,date,status,added_on', ...rows].join('\r\n')
+  const csv = ['headliner,openers,venue,date,time,status,added_on', ...rows].join('\r\n')
 
   return new Response(csv, {
     headers: {

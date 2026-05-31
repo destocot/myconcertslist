@@ -98,13 +98,24 @@ model Concert {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  artist      String
+  headliner   String
   venue       String?
   performedAt DateTime @map("performed_at")
   status      String   @default("confirmed")
 
-  profileId String  @map("profile_id")
-  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId String   @map("profile_id")
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  openers   Opener[]
 
   @@map("concerts")
+}
+
+model Opener {
+  id   String @id @default(cuid())
+  name String
+
+  concertId String  @map("concert_id")
+  concert   Concert @relation(fields: [concertId], references: [id], onDelete: Cascade)
+
+  @@map("openers")
 }

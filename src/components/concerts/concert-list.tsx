@@ -1,6 +1,6 @@
 'use client'
 
-import type { Concert } from '@/generated/prisma/client'
+import type { ConcertWithOpeners } from '@/resources/concerts/queries'
 import { ConcertItem } from '@/components/concerts/concert-item'
 import { ConcertFormDialog } from '@/components/concerts/concert-form-dialog'
 import { Button } from '@/components/ui/button'
@@ -17,11 +17,11 @@ import { Fragment, useState } from 'react'
 
 const getToday = (): Date => {
   const d = new Date()
-  d.setHours(0, 0, 0, 0)
+  d.setUTCHours(0, 0, 0, 0)
   return d
 }
 
-const splitConcerts = (concerts: Concert[], today: Date) => ({
+const splitConcerts = (concerts: ConcertWithOpeners[], today: Date) => ({
   upcoming: concerts
     .filter((c) => c.status === 'confirmed' && new Date(c.performedAt) >= today)
     .sort((a, b) => +new Date(a.performedAt) - +new Date(b.performedAt)),
@@ -44,10 +44,10 @@ export const ConcertList = ({ isOwner, username }: ConcertListProps) => {
 
   const queryKey = isOwner ? concertKeys.lists() : concertKeys.public(username)
   const queryFn = isOwner
-    ? () => fetch('/api/concerts').then((r) => r.json() as Promise<Concert[]>)
+    ? () => fetch('/api/concerts').then((r) => r.json() as Promise<ConcertWithOpeners[]>)
     : () =>
         fetch(`/api/concerts/${username}`).then(
-          (r) => r.json() as Promise<Concert[]>,
+          (r) => r.json() as Promise<ConcertWithOpeners[]>,
         )
 
   const { data: concerts = [], isLoading } = useQuery({ queryKey, queryFn })
@@ -100,7 +100,7 @@ export const ConcertList = ({ isOwner, username }: ConcertListProps) => {
     await updateMutation.mutateAsync({
       id,
       data: {
-        artist: concert.artist,
+        headliner: concert.headliner,
         venue: concert.venue ?? '',
         performedAt: new Date(concert.performedAt).toISOString().slice(0, 10),
         status: 'confirmed',
@@ -193,7 +193,7 @@ const TabCount = ({ count }: { count: number }) => (
 )
 
 interface ConcertTabPanelProps {
-  concerts: Concert[]
+  concerts: ConcertWithOpeners[]
   emptyLabel: string
   forceIsPast?: boolean
   isMaybeTab?: boolean
@@ -223,7 +223,7 @@ const ConcertTabPanel = ({
   }
 
   const getMonthLabel = (date: Date) =>
-    date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
   return (
     <div className='bg-card overflow-hidden rounded'>

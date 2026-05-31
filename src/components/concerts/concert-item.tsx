@@ -1,6 +1,6 @@
 'use client'
 
-import type { Concert } from '@/generated/prisma/client'
+import type { ConcertWithOpeners } from '@/resources/concerts/queries'
 import { Button } from '@/components/ui/button'
 import { ConcertFormDialog } from '@/components/concerts/concert-form-dialog'
 import {
@@ -19,7 +19,7 @@ import { MapPin, Calendar, Pencil, Trash2, CheckCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ConcertItemProps {
-  concert: Concert
+  concert: ConcertWithOpeners
   isPast?: boolean
   showConfirm?: boolean
   onUpdate?: (id: string, data: ConcertInput) => Promise<void>
@@ -35,27 +35,36 @@ export const ConcertItem = ({
   onDelete,
   onConfirm,
 }: ConcertItemProps) => {
-  const formattedDate = new Date(concert.performedAt).toLocaleDateString(
-    'en-US',
-    { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' },
-  )
+  const date = new Date(concert.performedAt)
+  const formattedDate = date.toLocaleDateString('en-US', {
+    weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC',
+  })
+  const hasTime = date.getUTCHours() !== 0 || date.getUTCMinutes() !== 0
+  const formattedTime = hasTime
+    ? date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' })
+    : null
 
   return (
     <div
       className={cn(
-        'bg-card group flex items-center gap-4 border-b px-4 py-3 last:border-b-0',
+        'bg-card group flex items-center gap-4 border-b px-4 py-3.5 last:border-b-0',
         isPast && 'opacity-50',
       )}
     >
-      <div className='bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded text-sm font-bold'>
-        {concert.artist.slice(0, 2).toUpperCase()}
+      <div className='bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded text-sm font-bold'>
+        {concert.headliner.slice(0, 2).toUpperCase()}
       </div>
 
       <div className='min-w-0 flex-1'>
-        <p className='text-foreground truncate font-semibold leading-tight'>
-          {concert.artist}
+        <p className='text-foreground truncate font-semibold leading-snug'>
+          {concert.headliner}
         </p>
-        <div className='text-muted-foreground mt-0.5 flex items-center gap-3 text-xs'>
+        {concert.openers.length > 0 && (
+          <p className='text-muted-foreground mt-0.5 truncate text-xs'>
+            w/ {concert.openers.map((o) => o.name).join(', ')}
+          </p>
+        )}
+        <div className='text-muted-foreground mt-1 flex items-center gap-3 text-xs'>
           {concert.venue && (
             <span className='flex items-center gap-1 truncate'>
               <MapPin className='h-3 w-3 shrink-0' />
@@ -65,6 +74,9 @@ export const ConcertItem = ({
           <span className='flex shrink-0 items-center gap-1'>
             <Calendar className='h-3 w-3' />
             {formattedDate}
+            {formattedTime && (
+              <span className='text-muted-foreground/70'>· {formattedTime}</span>
+            )}
           </span>
         </div>
       </div>
@@ -111,7 +123,7 @@ export const ConcertItem = ({
                   <AlertDialogDescription>
                     Remove{' '}
                     <span className='text-foreground font-medium'>
-                      {concert.artist}
+                      {concert.headliner}
                     </span>{' '}
                     from your list. This cannot be undone.
                   </AlertDialogDescription>

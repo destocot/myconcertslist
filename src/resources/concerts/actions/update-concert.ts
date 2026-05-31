@@ -1,15 +1,14 @@
 'use server'
 
-import { auth } from '@/lib/auth'
+import { getSession } from '@/lib/server-utils'
 import prisma from '@/lib/prisma'
-import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import * as v from 'valibot'
 import { updateConcert } from '@/resources/concerts/queries'
 import { ConcertSchema } from '@/resources/concerts/validators'
 
 export const updateConcertAction = async (id: string, input: unknown) => {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getSession()
   if (!session) throw new Error('Unauthorized')
 
   const data = v.parse(ConcertSchema, input)
@@ -18,11 +17,19 @@ export const updateConcertAction = async (id: string, input: unknown) => {
     where: { id, profile: { userId: session.user.id } },
   })
 
+  await prisma.opener.deleteMany({ where: { concertId: id } })
+
+  if (data.openers?.length) {
+    await prisma.opener.createMany({
+      data: data.openers.map((name) => ({ name, concertId: id })),
+    })
+  }
+
   revalidatePath('/')
   return updateConcert(id, {
-    artist: data.artist,
+    headliner: data.headliner,
     venue: data.venue || null,
-    performedAt: new Date(data.performedAt),
+    performedAt: new Date(`${data.performedAt}T${data.time || '00:00'}:00.000Z`),
     status: data.status,
   })
 }

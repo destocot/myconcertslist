@@ -1,9 +1,14 @@
 import type { Prisma } from '@/generated/prisma/client'
 import prisma from '@/lib/prisma'
 
+export type ConcertWithOpeners = Prisma.ConcertGetPayload<{
+  include: { openers: true }
+}>
+
 export const findAllConcerts = (profileId: string) => {
   return prisma.concert.findMany({
     where: { profileId },
+    include: { openers: true },
   })
 }
 

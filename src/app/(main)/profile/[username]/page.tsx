@@ -22,7 +22,7 @@ export default async function Page({ params }: PageProps) {
   const concerts = await findAllConcerts(profile.id)
 
   const now = new Date()
-  now.setHours(0, 0, 0, 0)
+  now.setUTCHours(0, 0, 0, 0)
 
   const upcoming = concerts.filter(
     (c) => c.status === 'confirmed' && new Date(c.performedAt) >= now,
