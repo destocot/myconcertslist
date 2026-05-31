@@ -32,13 +32,6 @@
     "valibot": "^1.4.0",
     "zustand": "^5.0.13"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/engines",
-      "better-sqlite3",
-      "prisma"
-    ]
-  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/better-sqlite3": "^7.6.13",
