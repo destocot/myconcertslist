@@ -3,7 +3,7 @@ import { findAllConcerts } from '@/resources/concerts/queries'
 import { ProfileVisibilityToggle } from '@/components/profile/profile-visibility-toggle'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { CalendarDays, Music2, ListMusic, Bookmark } from 'lucide-react'
+import { CalendarDays, Music2, ListMusic, Bookmark, Download } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -55,6 +55,14 @@ export default async function Page({ params }: PageProps) {
             </div>
             <div className='mb-1 flex items-center gap-3'>
               {isOwner && <ProfileVisibilityToggle isPublic={profile.isPublic} />}
+              {isOwner && (
+                <Button asChild variant='outline' size='sm'>
+                  <a href='/api/concerts/export' download>
+                    <Download className='h-3.5 w-3.5' />
+                    Export CSV
+                  </a>
+                </Button>
+              )}
               <Button asChild variant='outline' size='sm'>
                 <Link href={`/concertlist/${profile.user.username}`}>View list</Link>
               </Button>

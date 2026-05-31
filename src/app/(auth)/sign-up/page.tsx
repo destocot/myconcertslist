@@ -16,7 +16,7 @@ import {
 import { signUp } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Music2 } from 'lucide-react'
+import { Loader2, Music2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const SignUpSchema = v.object({
@@ -137,8 +137,15 @@ export default function SignUpPage() {
             )}
           </Field>
 
-          <Button type='submit' className='w-full'>
-            Create account
+          <Button type='submit' className='w-full' disabled={form.isSubmitting}>
+            {form.isSubmitting ? (
+              <>
+                <Loader2 className='animate-spin' />
+                Creating account…
+              </>
+            ) : (
+              'Create account'
+            )}
           </Button>
         </Form>
       </CardContent>

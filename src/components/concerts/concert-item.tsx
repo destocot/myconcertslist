@@ -37,7 +37,7 @@ export const ConcertItem = ({
 }: ConcertItemProps) => {
   const formattedDate = new Date(concert.performedAt).toLocaleDateString(
     'en-US',
-    { year: 'numeric', month: 'long', day: 'numeric' },
+    { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' },
   )
 
   return (

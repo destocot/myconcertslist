@@ -16,7 +16,7 @@ import {
 import { signIn } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Music2 } from 'lucide-react'
+import { Loader2, Music2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const SignInSchema = v.object({
@@ -91,8 +91,15 @@ export default function SignInPage() {
             )}
           </Field>
 
-          <Button type='submit' className='w-full'>
-            Sign in
+          <Button type='submit' className='w-full' disabled={form.isSubmitting}>
+            {form.isSubmitting ? (
+              <>
+                <Loader2 className='animate-spin' />
+                Signing in…
+              </>
+            ) : (
+              'Sign in'
+            )}
           </Button>
         </Form>
       </CardContent>
