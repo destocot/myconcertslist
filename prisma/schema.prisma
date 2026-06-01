@@ -84,6 +84,7 @@ model Profile {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   isPublic Boolean @default(true) @map("is_public")
+  theme    String  @default("blue")
 
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id])

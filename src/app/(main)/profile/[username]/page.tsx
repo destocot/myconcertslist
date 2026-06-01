@@ -1,6 +1,7 @@
 import { getSession, requireProfile, assertAccess } from '@/lib/server-utils'
 import { findAllConcerts } from '@/resources/concerts/queries'
 import { ProfileVisibilityToggle } from '@/components/profile/profile-visibility-toggle'
+import { ThemePicker } from '@/components/theme-picker'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { CalendarDaysIcon, Music2Icon, ListMusicIcon, BookmarkIcon, DownloadIcon } from 'lucide-react'
@@ -95,6 +96,16 @@ export default async function Page({ params }: PageProps) {
               value={maybe}
             />
           </div>
+
+          {isOwner && (
+            <>
+              <Separator className='my-5' />
+              <div className='flex items-center justify-between'>
+                <p className='text-muted-foreground text-sm'>Theme</p>
+                <ThemePicker />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
