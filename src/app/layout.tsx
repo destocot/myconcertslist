@@ -20,14 +20,13 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const session = await getSession()
-  let theme = 'blue'
-  if (session) {
-    const profile = await prisma.profile.findUnique({
-      where: { userId: session.user.id },
-      select: { theme: true },
-    })
-    theme = profile?.theme ?? 'blue'
-  }
+  const profile = session
+    ? await prisma.profile.findUnique({
+        where: { userId: session.user.id },
+        select: { theme: true },
+      })
+    : null
+  const theme = profile?.theme ?? 'blue'
 
   return (
     <html lang='en' suppressHydrationWarning>
