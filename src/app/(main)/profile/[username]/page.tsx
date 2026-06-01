@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { getSession, requireProfile, assertAccess } from '@/lib/server-utils'
 import { findAllConcerts } from '@/resources/concerts/queries'
 import { ProfileVisibilityToggle } from '@/components/profile/profile-visibility-toggle'
@@ -10,6 +11,11 @@ import { Button } from '@/components/ui/button'
 
 interface PageProps {
   readonly params: Promise<{ username: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { username } = await params
+  return { title: `${username}'s Profile` }
 }
 
 export default async function Page({ params }: PageProps) {
@@ -47,8 +53,8 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <div className='mx-auto w-full max-w-4xl px-4 py-6'>
-      <Card className='overflow-hidden'>
-        <div className='bg-primary h-24' />
+      <Card className='gap-0 overflow-hidden pt-0'>
+        <div className='bg-primary h-28' />
         <CardContent className='relative pb-6 pt-0'>
           <div className='flex items-end justify-between'>
             <div className='bg-primary text-primary-foreground -mt-10 flex h-20 w-20 items-center justify-center rounded-full border-4 border-card text-2xl font-bold'>

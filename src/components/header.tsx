@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { SignOutButton } from '@/components/sign-out-button'
-import { Music2Icon, UserIcon } from 'lucide-react'
+import { TicketIcon, UserIcon } from 'lucide-react'
 import Link from 'next/link'
 
 export const Header = async () => {
@@ -10,12 +10,10 @@ export const Header = async () => {
   return (
     <header className='bg-primary text-primary-foreground'>
       <div className='mx-auto flex h-14 max-w-4xl items-center justify-between px-4'>
-        <Link href='/' className='flex items-center gap-2'>
-          <Music2Icon className='h-5 w-5' />
-          <span className='text-lg font-bold tracking-tight'>
-            MyConcertList
-          </span>
-        </Link>
+        <div className='flex items-center gap-2'>
+          <TicketIcon className='h-5 w-5' />
+          <span className='text-lg font-bold tracking-tight'>MyConcertList</span>
+        </div>
         {session?.user.username && (
           <div className='flex items-center gap-3'>
             <Link

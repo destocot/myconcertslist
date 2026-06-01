@@ -10,8 +10,20 @@ import prisma from '@/lib/prisma'
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
-  title: 'My Concert List',
-  description: 'Track your concerts',
+  title: {
+    default: 'MyConcertList',
+    template: '%s - MyConcertList',
+  },
+  description: 'Track every concert you\'ve ever been to.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
+  openGraph: {
+    siteName: 'MyConcertList',
+    type: 'website',
+    description: 'Track every concert you\'ve ever been to.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 }
 
 export default async function RootLayout({

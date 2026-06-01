@@ -1,8 +1,14 @@
+import type { Metadata } from 'next'
 import { getSession, requireProfile, assertAccess } from '@/lib/server-utils'
 import { ConcertList } from '@/components/concerts/concert-list'
 
 interface PageProps {
   readonly params: Promise<{ username: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { username } = await params
+  return { title: `${username}'s Concert List` }
 }
 
 export default async function Page({ params }: PageProps) {
