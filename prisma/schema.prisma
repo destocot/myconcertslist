@@ -85,6 +85,10 @@ model Profile {
 
   isPublic Boolean @default(true) @map("is_public")
   theme    String  @default("blue")
+  gender   String? @map("gender")
+  birthday DateTime? @map("birthday")
+  location String? @map("location")
+  bio      String? @map("bio")
 
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id])

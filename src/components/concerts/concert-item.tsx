@@ -54,7 +54,7 @@ export const ConcertItem = ({
         className={cn(
           'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold',
           isPast
-            ? 'bg-muted text-muted-foreground/60'
+            ? 'bg-muted text-muted-foreground'
             : 'bg-primary/10 text-primary',
         )}
       >
@@ -66,7 +66,7 @@ export const ConcertItem = ({
           <p
             className={cn(
               'truncate font-semibold leading-snug',
-              isPast ? 'text-foreground/50' : 'text-foreground',
+              'text-foreground',
             )}
           >
             {concert.headliner}

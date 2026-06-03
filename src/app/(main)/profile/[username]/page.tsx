@@ -2,10 +2,15 @@ import type { Metadata } from 'next'
 import { getSession, requireProfile, assertAccess } from '@/lib/server-utils'
 import { findAllConcerts } from '@/resources/concerts/queries'
 import { ProfileVisibilityToggle } from '@/components/profile/profile-visibility-toggle'
-import { ThemePicker } from '@/components/theme-picker'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { CalendarDaysIcon, Music2Icon, ListMusicIcon, BookmarkIcon, DownloadIcon } from 'lucide-react'
+import {
+  Music2Icon,
+  ListMusicIcon,
+  BookmarkIcon,
+  DownloadIcon,
+  Settings2Icon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -16,6 +21,12 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { username } = await params
   return { title: `${username}'s Profile` }
+}
+
+const GENDER_LABELS: Record<string, string> = {
+  male: 'Male',
+  female: 'Female',
+  non_binary: 'Non-Binary',
 }
 
 export default async function Page({ params }: PageProps) {
@@ -46,6 +57,20 @@ export default async function Page({ params }: PageProps) {
     year: 'numeric',
   })
 
+  const birthdayDisplay = profile.birthday
+    ? profile.birthday.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : null
+
+  const genderDisplay = profile.gender ? (GENDER_LABELS[profile.gender] ?? null) : null
+
+  const lastConcert = concerts
+    .filter((c) => c.status === 'confirmed' && new Date(c.performedAt) < now)
+    .sort((a, b) => new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime())[0] ?? null
+
+  const nextConcert = concerts
+    .filter((c) => c.status === 'confirmed' && new Date(c.performedAt) >= now)
+    .sort((a, b) => new Date(a.performedAt).getTime() - new Date(b.performedAt).getTime())[0] ?? null
+
   return (
     <div className='mx-auto w-full max-w-4xl px-4 py-6'>
       <Card className='gap-0 overflow-hidden pt-0'>
@@ -65,17 +90,47 @@ export default async function Page({ params }: PageProps) {
                   </a>
                 </Button>
               )}
+              {isOwner && (
+                <Button asChild variant='outline' size='sm'>
+                  <Link href='/editprofile'>
+                    <Settings2Icon className='h-3.5 w-3.5' />
+                    Edit Profile
+                  </Link>
+                </Button>
+              )}
               <Button asChild variant='outline' size='sm'>
                 <Link href={`/concertlist/${profile.user.username}`}>View list</Link>
               </Button>
             </div>
           </div>
+
           <div className='mt-3'>
             <h1 className='text-xl font-bold'>{profile.user.username}&apos;s Profile</h1>
-            <p className='text-muted-foreground flex items-center gap-1.5 text-sm'>
-              <CalendarDaysIcon className='h-3.5 w-3.5' />
-              Member since {memberSince}
-            </p>
+            {profile.bio && (
+              <p className='text-muted-foreground mt-2 text-sm leading-relaxed'>{profile.bio}</p>
+            )}
+            <div className='mt-3 grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-1 text-sm'>
+              {genderDisplay && (
+                <>
+                  <span className='text-muted-foreground'>Gender</span>
+                  <span>{genderDisplay}</span>
+                </>
+              )}
+              {birthdayDisplay && (
+                <>
+                  <span className='text-muted-foreground'>Birthday</span>
+                  <span>{birthdayDisplay}</span>
+                </>
+              )}
+              {profile.location && (
+                <>
+                  <span className='text-muted-foreground'>Location</span>
+                  <span>{profile.location}</span>
+                </>
+              )}
+              <span className='text-muted-foreground'>Joined</span>
+              <span>{memberSince}</span>
+            </div>
           </div>
 
           <Separator className='my-5' />
@@ -98,12 +153,38 @@ export default async function Page({ params }: PageProps) {
             />
           </div>
 
-          {isOwner && (
+          {(lastConcert ?? nextConcert) && (
             <>
               <Separator className='my-5' />
-              <div className='flex items-center justify-between'>
-                <p className='text-muted-foreground text-sm'>Theme</p>
-                <ThemePicker />
+              <div className={`grid gap-3 ${lastConcert && nextConcert ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
+                {lastConcert && (
+                  <div className='bg-muted/40 border-border relative overflow-hidden rounded-lg border p-4'>
+                    <div className='bg-primary absolute top-0 left-0 h-full w-1' />
+                    <p className='text-muted-foreground mb-2 text-xs font-medium uppercase tracking-widest'>Last Show</p>
+                    <p className='truncate text-base font-bold leading-tight'>{lastConcert.headliner}</p>
+                    {lastConcert.tourName && (
+                      <p className='text-primary mt-0.5 truncate text-xs'>{lastConcert.tourName}</p>
+                    )}
+                    <p className='text-muted-foreground mt-2 truncate text-xs'>
+                      {new Date(lastConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      {lastConcert.venue && ` · ${lastConcert.venue}`}
+                    </p>
+                  </div>
+                )}
+                {nextConcert && (
+                  <div className='border-primary/30 bg-primary/5 relative overflow-hidden rounded-lg border p-4'>
+                    <div className='bg-primary absolute top-0 left-0 h-full w-1' />
+                    <p className='text-primary mb-2 text-xs font-medium uppercase tracking-widest'>Next Show</p>
+                    <p className='truncate text-base font-bold leading-tight'>{nextConcert.headliner}</p>
+                    {nextConcert.tourName && (
+                      <p className='text-primary mt-0.5 truncate text-xs'>{nextConcert.tourName}</p>
+                    )}
+                    <p className='text-muted-foreground mt-2 truncate text-xs'>
+                      {new Date(nextConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                      {nextConcert.venue && ` · ${nextConcert.venue}`}
+                    </p>
+                  </div>
+                )}
               </div>
             </>
           )}
