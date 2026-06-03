@@ -22,7 +22,7 @@ export const Header = async () => {
               className='text-primary-foreground/70 hover:text-primary-foreground flex items-center gap-1.5 text-sm transition-colors'
             >
               <UserIcon className='h-4 w-4' />
-              {session.user.name}
+              {session.user.username}
             </Link>
             <SignOutButton />
           </div>

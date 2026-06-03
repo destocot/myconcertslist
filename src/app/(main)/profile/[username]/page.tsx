@@ -39,12 +39,7 @@ export default async function Page({ params }: PageProps) {
   ).length
   const maybe = concerts.filter((c) => c.status === 'maybe').length
 
-  const initials = profile.user.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+  const initials = profile.user.username.slice(0, 2).toUpperCase()
 
   const memberSince = profile.createdAt.toLocaleDateString('en-US', {
     month: 'long',
@@ -76,7 +71,7 @@ export default async function Page({ params }: PageProps) {
             </div>
           </div>
           <div className='mt-3'>
-            <h1 className='text-xl font-bold'>{profile.user.name}</h1>
+            <h1 className='text-xl font-bold'>{profile.user.username}&apos;s Profile</h1>
             <p className='text-muted-foreground flex items-center gap-1.5 text-sm'>
               <CalendarDaysIcon className='h-3.5 w-3.5' />
               Member since {memberSince}
