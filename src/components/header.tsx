@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { SignOutButton } from '@/components/sign-out-button'
 import { TicketIcon, UserIcon } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export const Header = async () => {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -14,8 +15,8 @@ export const Header = async () => {
           <TicketIcon className='h-5 w-5' />
           <span className='text-lg font-bold tracking-tight'>MyConcertList</span>
         </div>
-        {session?.user.username && (
-          <div className='flex items-center gap-3'>
+        {session?.user.username ? (
+          <div className='flex items-center gap-4'>
             <Link
               href={`/profile/${session.user.username}`}
               className='text-primary-foreground/70 hover:text-primary-foreground flex items-center gap-1.5 text-sm transition-colors'
@@ -24,6 +25,25 @@ export const Header = async () => {
               {session.user.name}
             </Link>
             <SignOutButton />
+          </div>
+        ) : (
+          <div className='flex items-center gap-4'>
+            <Button
+              asChild
+              variant='outline'
+              size='sm'
+              className='border-transparent text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground hover:border-transparent'
+            >
+              <Link href='/sign-in'>Sign in</Link>
+            </Button>
+            <Button
+              asChild
+              variant='outline'
+              size='sm'
+              className='border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground hover:border-primary-foreground/50'
+            >
+              <Link href='/sign-up'>Sign up</Link>
+            </Button>
           </div>
         )}
       </div>
