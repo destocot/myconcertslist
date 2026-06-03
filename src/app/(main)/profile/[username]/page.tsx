@@ -20,7 +20,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { username } = await params
-  return { title: `${username}'s Profile` }
+  const profile = await requireProfile(username)
+  return { title: `${profile.user.displayUsername!}'s Profile` }
 }
 
 const GENDER_LABELS: Record<string, string> = {
@@ -50,7 +51,7 @@ export default async function Page({ params }: PageProps) {
   ).length
   const maybe = concerts.filter((c) => c.status === 'maybe').length
 
-  const initials = profile.user.username.slice(0, 2).toUpperCase()
+  const initials = profile.user.displayUsername!.slice(0, 2).toUpperCase()
 
   const memberSince = profile.createdAt.toLocaleDateString('en-US', {
     month: 'long',
@@ -105,7 +106,7 @@ export default async function Page({ params }: PageProps) {
           </div>
 
           <div className='mt-3'>
-            <h1 className='text-xl font-bold'>{profile.user.username}&apos;s Profile</h1>
+            <h1 className='text-xl font-bold'>{profile.user.displayUsername!}&apos;s Profile</h1>
             {profile.bio && (
               <p className='text-muted-foreground mt-2 text-sm leading-relaxed'>{profile.bio}</p>
             )}
@@ -153,25 +154,23 @@ export default async function Page({ params }: PageProps) {
             />
           </div>
 
-          {(lastConcert ?? nextConcert) && (
+          {lastConcert && (
             <>
               <Separator className='my-5' />
-              <div className={`grid gap-3 ${lastConcert && nextConcert ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
-                {lastConcert && (
-                  <div className='bg-muted/40 border-border relative overflow-hidden rounded-lg border p-4'>
-                    <div className='bg-primary absolute top-0 left-0 h-full w-1' />
-                    <p className='text-muted-foreground mb-2 text-xs font-medium uppercase tracking-widest'>Last Show</p>
-                    <p className='truncate text-base font-bold leading-tight'>{lastConcert.headliner}</p>
-                    {lastConcert.tourName && (
-                      <p className='text-primary mt-0.5 truncate text-xs'>{lastConcert.tourName}</p>
-                    )}
-                    <p className='text-muted-foreground mt-2 truncate text-xs'>
-                      {new Date(lastConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                      {lastConcert.venue && ` · ${lastConcert.venue}`}
-                    </p>
-                  </div>
-                )}
-                {nextConcert && (
+              <div className='grid grid-cols-2 gap-3'>
+                <div className='bg-muted/40 border-border relative overflow-hidden rounded-lg border p-4'>
+                  <div className='bg-primary absolute top-0 left-0 h-full w-1' />
+                  <p className='text-muted-foreground mb-2 text-xs font-medium uppercase tracking-widest'>Last Show</p>
+                  <p className='truncate text-base font-bold leading-tight'>{lastConcert.headliner}</p>
+                  {lastConcert.tourName && (
+                    <p className='text-primary mt-0.5 truncate text-xs'>{lastConcert.tourName}</p>
+                  )}
+                  <p className='text-muted-foreground mt-2 truncate text-xs'>
+                    {new Date(lastConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    {lastConcert.venue && ` · ${lastConcert.venue}`}
+                  </p>
+                </div>
+                {nextConcert ? (
                   <div className='border-primary/30 bg-primary/5 relative overflow-hidden rounded-lg border p-4'>
                     <div className='bg-primary absolute top-0 left-0 h-full w-1' />
                     <p className='text-primary mb-2 text-xs font-medium uppercase tracking-widest'>Next Show</p>
@@ -183,6 +182,12 @@ export default async function Page({ params }: PageProps) {
                       {new Date(nextConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                       {nextConcert.venue && ` · ${nextConcert.venue}`}
                     </p>
+                  </div>
+                ) : (
+                  <div className='border-border relative overflow-hidden rounded-lg border border-dashed p-4 flex flex-col items-center justify-center text-center'>
+                    <p className='text-2xl mb-1'>🎟️</p>
+                    <p className='text-muted-foreground text-xs font-medium'>No upcoming shows</p>
+                    <p className='text-muted-foreground/60 text-xs mt-0.5'>Time to find your next concert</p>
                   </div>
                 )}
               </div>

@@ -14,6 +14,7 @@ import type { ConcertInput } from '@/resources/concerts/validators'
 import { toast } from 'sonner'
 import { PlusIcon, Music2Icon } from 'lucide-react'
 import { Fragment, useState } from 'react'
+import Link from 'next/link'
 
 const getToday = (): Date => {
   const d = new Date()
@@ -36,9 +37,10 @@ const splitConcerts = (concerts: ConcertWithOpeners[], today: Date) => ({
 interface ConcertListProps {
   isOwner: boolean
   username: string
+  displayUsername: string
 }
 
-export const ConcertList = ({ isOwner, username }: ConcertListProps) => {
+export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListProps) => {
   const queryClient = useQueryClient()
   const [today, setToday] = useState<Date>(getToday)
 
@@ -116,7 +118,7 @@ export const ConcertList = ({ isOwner, username }: ConcertListProps) => {
     <div className='mx-auto w-full max-w-4xl px-4 py-6'>
       <div className='mb-5 flex items-center justify-between'>
         <h1 className='text-xl font-bold'>Concert List</h1>
-        {isOwner && (
+        {isOwner ? (
           <ConcertFormDialog
             onSubmit={handleCreate}
             trigger={
@@ -126,6 +128,17 @@ export const ConcertList = ({ isOwner, username }: ConcertListProps) => {
               </Button>
             }
           />
+        ) : (
+          <p className='text-muted-foreground hidden text-sm sm:block'>
+            Viewing{' '}
+            <Link
+              href={`/profile/${username}`}
+              className='text-foreground font-medium hover:underline'
+            >
+              {displayUsername}
+            </Link>
+            &apos;s Concert List
+          </p>
         )}
       </div>
 

@@ -50,14 +50,7 @@ export const ConcertItem = ({
         'bg-card group flex items-center gap-4 border-b px-4 py-3.5 transition-colors last:border-b-0 hover:bg-muted/20',
       )}
     >
-      <div
-        className={cn(
-          'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold',
-          isPast
-            ? 'bg-muted text-muted-foreground'
-            : 'bg-primary/10 text-primary',
-        )}
-      >
+      <div className='bg-primary/10 text-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold'>
         {concert.headliner.replace(/[^\p{L}\p{N}\s]/gu, '').trim().slice(0, 2).toUpperCase()}
       </div>
 

@@ -8,7 +8,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { username } = await params
-  return { title: `${username}'s Concert List` }
+  const profile = await requireProfile(username)
+  return { title: `${profile.user.displayUsername!}'s Concert List` }
 }
 
 export default async function Page({ params }: PageProps) {
@@ -19,5 +20,11 @@ export default async function Page({ params }: PageProps) {
   ])
   const isOwner = assertAccess(profile, session)
 
-  return <ConcertList isOwner={isOwner} username={username} />
+  return (
+    <ConcertList
+      isOwner={isOwner}
+      username={username}
+      displayUsername={profile.user.displayUsername!}
+    />
+  )
 }
