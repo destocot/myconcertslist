@@ -114,6 +114,7 @@ model Concert {
   profile   Profile  @relation(fields: [profileId], references: [id])
   openers   Opener[]
 
+  @@index([profileId])
   @@map("concerts")
 }
 
@@ -124,5 +125,6 @@ model Opener {
   concertId String  @map("concert_id")
   concert   Concert @relation(fields: [concertId], references: [id], onDelete: Cascade)
 
+  @@index([concertId])
   @@map("openers")
 }
