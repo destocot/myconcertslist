@@ -2,28 +2,26 @@
 
 import { getSession } from '@/lib/server-utils'
 import prisma from '@/lib/prisma'
+import * as v from 'valibot'
+import { ProfileSettingsSchema } from '@/resources/profiles/validators'
 
-const VALID_GENDERS = new Set(['not_specified', 'male', 'female', 'non_binary'])
-
-export type UpdateSettingsInput = {
-  gender: string
-  birthday: string
-  location: string
-  bio: string
-}
-
-export const updateSettingsAction = async (input: UpdateSettingsInput) => {
+export const updateSettingsAction = async (input: unknown) => {
   const session = await getSession()
   if (!session) return { error: 'Not authenticated' }
 
-  const gender = VALID_GENDERS.has(input.gender) ? input.gender : 'not_specified'
-  const birthday = input.birthday ? new Date(input.birthday) : null
-  const location = input.location.trim() || null
-  const bio = input.bio.trim() || null
+  const result = v.safeParse(ProfileSettingsSchema, input)
+  if (!result.success) return { error: result.issues[0].message }
+
+  const { gender, birthday, location, bio } = result.output
 
   await prisma.profile.update({
     where: { userId: session.user.id },
-    data: { gender, birthday, location, bio },
+    data: {
+      gender,
+      birthday: birthday ? new Date(birthday) : null,
+      location: location || null,
+      bio: bio || null,
+    },
   })
 
   return { success: true }

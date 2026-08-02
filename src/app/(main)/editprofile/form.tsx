@@ -16,13 +16,17 @@ import {
 } from '@/components/ui/select'
 import { ThemePicker } from '@/components/theme-picker'
 import { updateSettingsAction } from '@/resources/profiles/actions/update-settings'
+import { PROFILE_LIMITS } from '@/resources/profiles/validators'
 import { Loader2Icon } from 'lucide-react'
 import { toast } from 'sonner'
 
 const SettingsSchema = v.object({
   birthday: v.string(),
-  location: v.pipe(v.string(), v.maxLength(100, 'Max 100 characters')),
-  bio: v.pipe(v.string(), v.maxLength(500, 'Max 500 characters')),
+  location: v.pipe(
+    v.string(),
+    v.maxLength(PROFILE_LIMITS.location, 'Max 100 characters'),
+  ),
+  bio: v.pipe(v.string(), v.maxLength(PROFILE_LIMITS.bio, 'Max 500 characters')),
 })
 
 type Props = {
