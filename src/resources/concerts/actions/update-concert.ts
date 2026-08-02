@@ -13,18 +13,6 @@ export const updateConcertAction = async (id: string, input: unknown) => {
 
   const data = v.parse(ConcertSchema, input)
 
-  await prisma.concert.findFirstOrThrow({
-    where: { id, profile: { userId: session.user.id } },
-  })
-
-  await prisma.opener.deleteMany({ where: { concertId: id } })
-
-  if (data.openers?.length) {
-    await prisma.opener.createMany({
-      data: data.openers.map((name) => ({ name, concertId: id })),
-    })
-  }
-
   const performedAt = new Date(
     `${data.performedAt}T${data.time || '00:00'}:00.000Z`,
   )
@@ -35,13 +23,34 @@ export const updateConcertAction = async (id: string, input: unknown) => {
   // favorites are past-concerts-only — drop it if this edit moves it out of the past
   const leavesPast = data.status !== 'confirmed' || performedAt >= today
 
-  revalidatePath('/')
-  return updateConcert(id, {
-    headliner: data.headliner,
-    tourName: data.tourName || null,
-    venue: data.venue || null,
-    performedAt,
-    status: data.status,
-    favoritedAt: leavesPast ? null : undefined,
+  // openers are replaced wholesale, so the delete/insert/update must land together
+  const concert = await prisma.$transaction(async (tx) => {
+    await tx.concert.findFirstOrThrow({
+      where: { id, profile: { userId: session.user.id } },
+    })
+
+    await tx.opener.deleteMany({ where: { concertId: id } })
+
+    if (data.openers?.length) {
+      await tx.opener.createMany({
+        data: data.openers.map((name) => ({ name, concertId: id })),
+      })
+    }
+
+    return updateConcert(
+      id,
+      {
+        headliner: data.headliner,
+        tourName: data.tourName || null,
+        venue: data.venue || null,
+        performedAt,
+        status: data.status,
+        favoritedAt: leavesPast ? null : undefined,
+      },
+      tx,
+    )
   })
+
+  revalidatePath('/')
+  return concert
 }

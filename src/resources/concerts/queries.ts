@@ -30,8 +30,9 @@ export const createConcert = (data: Prisma.ConcertUncheckedCreateInput) => {
 export const updateConcert = (
   id: string,
   data: Prisma.ConcertUncheckedUpdateInput,
+  client: Prisma.TransactionClient = prisma,
 ) => {
-  return prisma.concert.update({ where: { id }, data })
+  return client.concert.update({ where: { id }, data })
 }
 
 export const removeConcert = (id: string) => {
