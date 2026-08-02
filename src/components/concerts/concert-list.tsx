@@ -13,7 +13,8 @@ import { removeConcertAction } from '@/resources/concerts/actions/remove-concert
 import { toggleFavoriteAction } from '@/resources/concerts/actions/toggle-favorite'
 import type { ConcertInput } from '@/resources/concerts/validators'
 import { toast } from 'sonner'
-import { PlusIcon, Music2Icon } from 'lucide-react'
+import { PlusIcon, Music2Icon, ChevronDownIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useQueryState, parseAsStringLiteral } from 'nuqs'
 import { Fragment, useState } from 'react'
 import Link from 'next/link'
@@ -206,6 +207,7 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
               <ConcertTabPanel
                 concerts={past}
                 emptyLabel='No past concerts'
+                groupByYear
                 onUpdate={isOwner ? handleUpdate : undefined}
                 onDelete={isOwner ? handleDelete : undefined}
                 onToggleFavorite={isOwner ? handleToggleFavorite : undefined}
@@ -234,9 +236,7 @@ const TabCount = ({ count }: { count: number }) => (
   </span>
 )
 
-interface ConcertTabPanelProps {
-  concerts: ConcertWithOpeners[]
-  emptyLabel: string
+interface ConcertHandlers {
   isMaybeTab?: boolean
   onUpdate?: (id: string, data: ConcertInput) => Promise<void>
   onDelete?: (id: string) => Promise<void>
@@ -244,14 +244,17 @@ interface ConcertTabPanelProps {
   onToggleFavorite?: (id: string) => Promise<void>
 }
 
+interface ConcertTabPanelProps extends ConcertHandlers {
+  concerts: ConcertWithOpeners[]
+  emptyLabel: string
+  groupByYear?: boolean
+}
+
 const ConcertTabPanel = ({
   concerts,
   emptyLabel,
-  isMaybeTab,
-  onUpdate,
-  onDelete,
-  onConfirm,
-  onToggleFavorite,
+  groupByYear,
+  ...handlers
 }: ConcertTabPanelProps) => {
   if (concerts.length === 0) {
     return (
@@ -262,37 +265,130 @@ const ConcertTabPanel = ({
     )
   }
 
-  const getMonthLabel = (date: Date) =>
-    date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+  if (!groupByYear) {
+    return (
+      <div className='bg-card overflow-hidden rounded'>
+        <ConcertRows concerts={concerts} showYearInMonth {...handlers} />
+      </div>
+    )
+  }
+
+  const years = groupConcertsByYear(concerts)
+  const currentYear = String(new Date().getUTCFullYear())
+  // fall back to the most recent year so the panel is never fully collapsed
+  const openYear = years.some((y) => y.year === currentYear)
+    ? currentYear
+    : years[0].year
 
   return (
     <div className='bg-card overflow-hidden rounded'>
-      {concerts.map((concert, i) => {
-        const currentMonth = getMonthLabel(new Date(concert.performedAt))
-        const prevMonth =
-          i > 0 ? getMonthLabel(new Date(concerts[i - 1].performedAt)) : null
-        const showMonthDivider = currentMonth !== prevMonth
-
-        return (
-          <Fragment key={concert.id}>
-            {showMonthDivider && (
-              <div className='bg-muted/40 px-4 py-1.5'>
-                <span className='text-muted-foreground text-xs font-semibold uppercase tracking-wide'>
-                  {currentMonth}
-                </span>
-              </div>
-            )}
-            <ConcertItem
-              concert={concert}
-              showConfirm={isMaybeTab && !!onConfirm}
-              onUpdate={onUpdate}
-              onDelete={onDelete}
-              onConfirm={onConfirm}
-              onToggleFavorite={onToggleFavorite}
-            />
-          </Fragment>
-        )
-      })}
+      {years.map(({ year, concerts: yearConcerts }) => (
+        <YearSection
+          key={year}
+          year={year}
+          count={yearConcerts.length}
+          defaultOpen={year === openYear}
+        >
+          <ConcertRows concerts={yearConcerts} {...handlers} />
+        </YearSection>
+      ))}
     </div>
   )
+}
+
+interface YearGroup {
+  year: string
+  concerts: ConcertWithOpeners[]
+}
+
+const groupConcertsByYear = (concerts: ConcertWithOpeners[]): YearGroup[] =>
+  concerts.reduce<YearGroup[]>((groups, concert) => {
+    const year = String(new Date(concert.performedAt).getUTCFullYear())
+    const last = groups.at(-1)
+    if (last?.year === year) last.concerts.push(concert)
+    else groups.push({ year, concerts: [concert] })
+    return groups
+  }, [])
+
+interface YearSectionProps {
+  year: string
+  count: number
+  defaultOpen: boolean
+  children: React.ReactNode
+}
+
+const YearSection = ({ year, count, defaultOpen, children }: YearSectionProps) => {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <div className='border-b last:border-b-0'>
+      <button
+        type='button'
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+        className='bg-muted/40 hover:bg-muted/60 flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors'
+      >
+        <ChevronDownIcon
+          className={cn(
+            'text-muted-foreground h-4 w-4 transition-transform',
+            !open && '-rotate-90',
+          )}
+        />
+        <span className='text-sm font-semibold'>{year}</span>
+        <span className='text-muted-foreground ml-auto text-xs'>
+          {count} {count === 1 ? 'show' : 'shows'}
+        </span>
+      </button>
+      {open && children}
+    </div>
+  )
+}
+
+interface ConcertRowsProps extends ConcertHandlers {
+  concerts: ConcertWithOpeners[]
+  showYearInMonth?: boolean
+}
+
+const ConcertRows = ({
+  concerts,
+  showYearInMonth,
+  isMaybeTab,
+  onUpdate,
+  onDelete,
+  onConfirm,
+  onToggleFavorite,
+}: ConcertRowsProps) => {
+  const getMonthLabel = (date: Date) =>
+    date.toLocaleDateString('en-US', {
+      month: 'long',
+      ...(showYearInMonth && { year: 'numeric' }),
+      timeZone: 'UTC',
+    })
+
+  return concerts.map((concert, i) => {
+    const currentMonth = getMonthLabel(new Date(concert.performedAt))
+    const prevMonth =
+      i > 0 ? getMonthLabel(new Date(concerts[i - 1].performedAt)) : null
+    const showMonthDivider = currentMonth !== prevMonth
+
+    return (
+      <Fragment key={concert.id}>
+        {showMonthDivider && (
+          <div className='bg-muted/20 px-4 py-1.5'>
+            <span className='text-muted-foreground text-xs font-semibold uppercase tracking-wide'>
+              {currentMonth}
+            </span>
+          </div>
+        )}
+        <ConcertItem
+          concert={concert}
+          showConfirm={isMaybeTab && !!onConfirm}
+          onUpdate={onUpdate}
+          onDelete={onDelete}
+          onConfirm={onConfirm}
+          onToggleFavorite={onToggleFavorite}
+        />
+      </Fragment>
+    )
+  })
 }
