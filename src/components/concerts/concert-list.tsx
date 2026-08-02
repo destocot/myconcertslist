@@ -15,11 +15,32 @@ import type { ConcertInput } from '@/resources/concerts/validators'
 import { toast } from 'sonner'
 import { PlusIcon, Music2Icon, ChevronDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useQueryState, parseAsStringLiteral } from 'nuqs'
+import { useQueryState, parseAsStringLiteral, parseAsString } from 'nuqs'
+import { Input } from '@/components/ui/input'
+import { SearchIcon, XIcon } from 'lucide-react'
 import { Fragment, useState } from 'react'
 import Link from 'next/link'
 
 const TABS = ['upcoming', 'past', 'maybe'] as const
+
+const filterConcerts = (concerts: ConcertWithOpeners[], query: string) => {
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
+  if (terms.length === 0) return concerts
+
+  return concerts.filter((concert) => {
+    const haystack = [
+      concert.headliner,
+      concert.tourName,
+      concert.venue,
+      ...concert.openers.map((o) => o.name),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return terms.every((term) => haystack.includes(term))
+  })
+}
 
 const getToday = (): Date => {
   const d = new Date()
@@ -52,6 +73,7 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
     'tab',
     parseAsStringLiteral(TABS).withDefault('upcoming'),
   )
+  const [query, setQuery] = useQueryState('q', parseAsString.withDefault(''))
 
   const queryKey = isOwner ? concertKeys.lists() : concertKeys.public(username)
   const queryFn = isOwner
@@ -141,9 +163,12 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
   const handleTabChange = (value: string) => {
     setToday(getToday())
     setTab(value as (typeof TABS)[number])
+    // search only applies to the past tab — don't leave a stale param behind
+    if (value !== 'past') setQuery(null)
   }
 
   const { upcoming, past, maybe } = splitConcerts(concerts, today)
+  const matchedPast = filterConcerts(past, query)
 
   return (
     <div className='mx-auto w-full max-w-4xl px-4 py-6'>
@@ -181,7 +206,7 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
           </TabsTrigger>
           <TabsTrigger value='past'>
             Past
-            {past.length > 0 && <TabCount count={past.length} />}
+            {matchedPast.length > 0 && <TabCount count={matchedPast.length} />}
           </TabsTrigger>
           <TabsTrigger value='maybe'>
             Maybe
@@ -204,10 +229,21 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
               />
             </TabsContent>
             <TabsContent value='past'>
+              {past.length > 0 && (
+                <ConcertSearchInput
+                  value={query}
+                  onChange={(next) => setQuery(next || null)}
+                />
+              )}
               <ConcertTabPanel
-                concerts={past}
-                emptyLabel='No past concerts'
+                concerts={matchedPast}
+                emptyLabel={
+                  query.trim()
+                    ? `No past concerts match “${query.trim()}”`
+                    : 'No past concerts'
+                }
                 groupByYear
+                expandAll={!!query.trim()}
                 onUpdate={isOwner ? handleUpdate : undefined}
                 onDelete={isOwner ? handleDelete : undefined}
                 onToggleFavorite={isOwner ? handleToggleFavorite : undefined}
@@ -230,6 +266,34 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
   )
 }
 
+interface ConcertSearchInputProps {
+  value: string
+  onChange: (value: string) => void
+}
+
+const ConcertSearchInput = ({ value, onChange }: ConcertSearchInputProps) => (
+  <div className='relative mb-3'>
+    <SearchIcon className='text-muted-foreground pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2' />
+    <Input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder='Search headliner, tour, venue, openers…'
+      aria-label='Search past concerts'
+      className='pl-9'
+    />
+    {value && (
+      <button
+        type='button'
+        onClick={() => onChange('')}
+        aria-label='Clear search'
+        className='text-muted-foreground hover:text-foreground absolute right-3 top-1/2 -translate-y-1/2'
+      >
+        <XIcon className='h-4 w-4' />
+      </button>
+    )}
+  </div>
+)
+
 const TabCount = ({ count }: { count: number }) => (
   <span className='bg-primary/10 text-primary ml-1.5 rounded px-1.5 py-0.5 text-xs font-medium'>
     {count}
@@ -248,12 +312,14 @@ interface ConcertTabPanelProps extends ConcertHandlers {
   concerts: ConcertWithOpeners[]
   emptyLabel: string
   groupByYear?: boolean
+  expandAll?: boolean
 }
 
 const ConcertTabPanel = ({
   concerts,
   emptyLabel,
   groupByYear,
+  expandAll,
   ...handlers
 }: ConcertTabPanelProps) => {
   if (concerts.length === 0) {
@@ -288,6 +354,7 @@ const ConcertTabPanel = ({
           year={year}
           count={yearConcerts.length}
           defaultOpen={year === openYear}
+          forceOpen={expandAll}
         >
           <ConcertRows concerts={yearConcerts} {...handlers} />
         </YearSection>
@@ -314,18 +381,28 @@ interface YearSectionProps {
   year: string
   count: number
   defaultOpen: boolean
+  forceOpen?: boolean
   children: React.ReactNode
 }
 
-const YearSection = ({ year, count, defaultOpen, children }: YearSectionProps) => {
-  const [open, setOpen] = useState(defaultOpen)
+const YearSection = ({
+  year,
+  count,
+  defaultOpen,
+  forceOpen,
+  children,
+}: YearSectionProps) => {
+  const [expanded, setExpanded] = useState(defaultOpen)
+  // while searching every year stays open, otherwise matches would hide behind a collapsed header
+  const open = forceOpen || expanded
 
   return (
     <div className='border-b last:border-b-0'>
       <button
         type='button'
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() => setExpanded(!open)}
         aria-expanded={open}
+        disabled={forceOpen}
         className='bg-muted/40 hover:bg-muted/60 flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors'
       >
         <ChevronDownIcon
