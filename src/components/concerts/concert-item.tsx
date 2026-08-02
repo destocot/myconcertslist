@@ -20,7 +20,6 @@ import { cn } from '@/lib/utils'
 
 interface ConcertItemProps {
   concert: ConcertWithOpeners
-  isPast?: boolean
   showConfirm?: boolean
   onUpdate?: (id: string, data: ConcertInput) => Promise<void>
   onDelete?: (id: string) => Promise<void>
@@ -30,7 +29,6 @@ interface ConcertItemProps {
 
 export const ConcertItem = ({
   concert,
-  isPast,
   showConfirm,
   onUpdate,
   onDelete,

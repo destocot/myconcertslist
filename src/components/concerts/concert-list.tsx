@@ -14,8 +14,11 @@ import { toggleFavoriteAction } from '@/resources/concerts/actions/toggle-favori
 import type { ConcertInput } from '@/resources/concerts/validators'
 import { toast } from 'sonner'
 import { PlusIcon, Music2Icon } from 'lucide-react'
+import { useQueryState, parseAsStringLiteral } from 'nuqs'
 import { Fragment, useState } from 'react'
 import Link from 'next/link'
+
+const TABS = ['upcoming', 'past', 'maybe'] as const
 
 const getToday = (): Date => {
   const d = new Date()
@@ -44,6 +47,10 @@ interface ConcertListProps {
 export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListProps) => {
   const queryClient = useQueryClient()
   const [today, setToday] = useState<Date>(getToday)
+  const [tab, setTab] = useQueryState(
+    'tab',
+    parseAsStringLiteral(TABS).withDefault('upcoming'),
+  )
 
   const queryKey = isOwner ? concertKeys.lists() : concertKeys.public(username)
   const queryFn = isOwner
@@ -130,7 +137,10 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
     })
   }
 
-  const handleTabChange = () => setToday(getToday())
+  const handleTabChange = (value: string) => {
+    setToday(getToday())
+    setTab(value as (typeof TABS)[number])
+  }
 
   const { upcoming, past, maybe } = splitConcerts(concerts, today)
 
@@ -162,7 +172,7 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
         )}
       </div>
 
-      <Tabs defaultValue='upcoming' onValueChange={handleTabChange}>
+      <Tabs value={tab} onValueChange={handleTabChange}>
         <TabsList className='mb-4'>
           <TabsTrigger value='upcoming'>
             Upcoming
@@ -196,7 +206,6 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
               <ConcertTabPanel
                 concerts={past}
                 emptyLabel='No past concerts'
-                forceIsPast
                 onUpdate={isOwner ? handleUpdate : undefined}
                 onDelete={isOwner ? handleDelete : undefined}
                 onToggleFavorite={isOwner ? handleToggleFavorite : undefined}
@@ -207,7 +216,6 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
                 concerts={maybe}
                 emptyLabel='No maybe concerts'
                 isMaybeTab
-                today={today}
                 onUpdate={isOwner ? handleUpdate : undefined}
                 onDelete={isOwner ? handleDelete : undefined}
                 onConfirm={isOwner ? handleConfirm : undefined}
@@ -229,9 +237,7 @@ const TabCount = ({ count }: { count: number }) => (
 interface ConcertTabPanelProps {
   concerts: ConcertWithOpeners[]
   emptyLabel: string
-  forceIsPast?: boolean
   isMaybeTab?: boolean
-  today?: Date
   onUpdate?: (id: string, data: ConcertInput) => Promise<void>
   onDelete?: (id: string) => Promise<void>
   onConfirm?: (id: string) => Promise<void>
@@ -241,9 +247,7 @@ interface ConcertTabPanelProps {
 const ConcertTabPanel = ({
   concerts,
   emptyLabel,
-  forceIsPast,
   isMaybeTab,
-  today,
   onUpdate,
   onDelete,
   onConfirm,
@@ -264,10 +268,6 @@ const ConcertTabPanel = ({
   return (
     <div className='bg-card overflow-hidden rounded'>
       {concerts.map((concert, i) => {
-        const isPast =
-          forceIsPast ||
-          (isMaybeTab && today ? new Date(concert.performedAt) < today : false)
-
         const currentMonth = getMonthLabel(new Date(concert.performedAt))
         const prevMonth =
           i > 0 ? getMonthLabel(new Date(concerts[i - 1].performedAt)) : null
@@ -284,7 +284,6 @@ const ConcertTabPanel = ({
             )}
             <ConcertItem
               concert={concert}
-              isPast={isPast}
               showConfirm={isMaybeTab && !!onConfirm}
               onUpdate={onUpdate}
               onDelete={onDelete}
