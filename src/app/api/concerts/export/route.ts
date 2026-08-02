@@ -1,6 +1,7 @@
 import { getSession } from '@/lib/server-utils'
 import { findAllConcerts } from '@/resources/concerts/queries'
 import prisma from '@/lib/prisma'
+import { toUtcDateString, toUtcTimeString } from '@/lib/date-utils'
 
 const cell = (val: string) => `"${val.replaceAll('"', '""')}"`
 
@@ -14,26 +15,21 @@ export const GET = async () => {
 
   const concerts = await findAllConcerts(profile.id)
 
-  const date = new Date().toISOString().slice(0, 10)
-  const filename = `concerts-${session.user.username}-${date}.csv`
+  const filename = `concerts-${session.user.username}-${toUtcDateString(new Date())}.csv`
 
   const rows = concerts
     .sort((a, b) => +new Date(a.performedAt) - +new Date(b.performedAt))
     .map((c) => {
       const d = new Date(c.performedAt)
-      const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0
-      const time = hasTime
-        ? `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
-        : ''
       return [
         cell(c.headliner),
         cell(c.tourName ?? ''),
         cell(c.openers.map((o) => o.name).join(', ')),
         cell(c.venue ?? ''),
-        cell(d.toISOString().slice(0, 10)),
-        cell(time),
+        cell(toUtcDateString(d)),
+        cell(toUtcTimeString(d)),
         cell(c.status),
-        cell(new Date(c.createdAt).toISOString().slice(0, 10)),
+        cell(toUtcDateString(new Date(c.createdAt))),
       ].join(',')
     })
 

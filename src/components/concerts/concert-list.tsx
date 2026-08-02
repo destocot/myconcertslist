@@ -15,6 +15,7 @@ import type { ConcertInput } from '@/resources/concerts/validators'
 import { toast } from 'sonner'
 import { PlusIcon, Music2Icon, ChevronDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toUtcDateString, toUtcTimeString } from '@/lib/date-utils'
 import { useQueryState, parseAsStringLiteral, parseAsString } from 'nuqs'
 import { Input } from '@/components/ui/input'
 import { SearchIcon, XIcon } from 'lucide-react'
@@ -149,12 +150,19 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
   const handleConfirm = async (id: string) => {
     const concert = concerts.find((c) => c.id === id)
     if (!concert) return
+
+    // send every existing field — the update action treats an omitted field as "clear it"
+    const date = new Date(concert.performedAt)
+
     await updateMutation.mutateAsync({
       id,
       data: {
         headliner: concert.headliner,
+        tourName: concert.tourName ?? '',
         venue: concert.venue ?? '',
-        performedAt: new Date(concert.performedAt).toISOString().slice(0, 10),
+        performedAt: toUtcDateString(date),
+        time: toUtcTimeString(date),
+        openers: concert.openers.map((o) => o.name),
         status: 'confirmed',
       },
     })

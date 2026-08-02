@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { ConcertSchema } from '@/resources/concerts/validators'
 import type { ConcertInput } from '@/resources/concerts/validators'
 import type { ConcertWithOpeners } from '@/resources/concerts/queries'
+import { toUtcDateString, toUtcTimeString } from '@/lib/date-utils'
 import { useState } from 'react'
 import { XIcon } from 'lucide-react'
 
@@ -43,22 +44,15 @@ export const ConcertFormDialog = ({
           headliner: concert.headliner,
           tourName: concert.tourName ?? '',
           venue: concert.venue ?? '',
-          performedAt: new Date(concert.performedAt).toISOString().slice(0, 10),
-          time: (() => {
-            const d = new Date(concert.performedAt)
-            const h = d.getUTCHours()
-            const m = d.getUTCMinutes()
-            return h === 0 && m === 0
-              ? ''
-              : `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-          })(),
+          performedAt: toUtcDateString(new Date(concert.performedAt)),
+          time: toUtcTimeString(new Date(concert.performedAt)),
           status: concert.status as 'confirmed' | 'maybe',
         }
       : {
           headliner: '',
           tourName: '',
           venue: '',
-          performedAt: new Date().toISOString().slice(0, 10),
+          performedAt: toUtcDateString(new Date()),
           time: '',
           status: 'confirmed' as const,
         },

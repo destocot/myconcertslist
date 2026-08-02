@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { requireSession } from '@/lib/server-utils'
 import { findProfileSettings } from '@/resources/profiles/queries'
+import { toUtcDateString } from '@/lib/date-utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EditProfileForm } from './form'
 
@@ -11,9 +12,7 @@ export default async function Page() {
 
   const profile = await findProfileSettings(session.user.id)
 
-  const birthday = profile?.birthday
-    ? profile.birthday.toISOString().split('T')[0]
-    : ''
+  const birthday = profile?.birthday ? toUtcDateString(profile.birthday) : ''
 
   return (
     <div className='mx-auto w-full max-w-4xl px-4 py-6'>
