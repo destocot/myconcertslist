@@ -1,12 +1,11 @@
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
+import { getSession } from '@/lib/server-utils'
 import { SignOutButton } from '@/components/sign-out-button'
 import { TicketIcon, UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export const Header = async () => {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getSession()
 
   return (
     <header className='bg-primary text-primary-foreground'>

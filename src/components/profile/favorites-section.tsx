@@ -87,7 +87,7 @@ export const FavoritesSection = ({
                   title='Remove from favorites'
                   disabled={mutation.isPending}
                   onClick={() => mutation.mutate(concert.id)}
-                  className='shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100'
+                  className='shrink-0 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100'
                 >
                   <StarIcon className='text-primary fill-current' />
                 </Button>

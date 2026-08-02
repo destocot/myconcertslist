@@ -107,7 +107,7 @@ export const ConcertItem = ({
               title={concert.favoritedAt ? 'Remove from favorites' : 'Add to favorites'}
               className={cn(
                 !concert.favoritedAt &&
-                  'opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100',
+                  'transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100',
               )}
             >
               <StarIcon
@@ -121,7 +121,7 @@ export const ConcertItem = ({
       )}
 
       {(showConfirm || onUpdate || onDelete) && (
-        <div className='flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+        <div className='flex shrink-0 items-center gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100'>
           {showConfirm && onConfirm && (
             <Button
               variant='ghost'

@@ -12,6 +12,13 @@ export const auth = betterAuth({
       generateId: false,
     },
   },
+  session: {
+    // serve session data from a signed cookie for 5 minutes instead of hitting the DB every request
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
   plugins: [
     username({
       usernameValidator: (value) => /^\w+$/.test(value),

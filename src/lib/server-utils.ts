@@ -1,12 +1,14 @@
+import { cache } from 'react'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import type { Profile } from '@/generated/prisma/client'
 
-export const getSession = async () => {
+// cached per request so layout, header, and page share one lookup
+export const getSession = cache(async () => {
   return auth.api.getSession({ headers: await headers() })
-}
+})
 
 export const requireSession = async () => {
   const session = await getSession()

@@ -91,7 +91,7 @@ model Profile {
   bio      String? @map("bio")
 
   userId String @unique @map("user_id")
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   concerts Concert[]
 
@@ -111,7 +111,7 @@ model Concert {
   favoritedAt DateTime? @map("favorited_at")
 
   profileId String   @map("profile_id")
-  profile   Profile  @relation(fields: [profileId], references: [id])
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   openers   Opener[]
 
   @@index([profileId])
@@ -119,7 +119,10 @@ model Concert {
 }
 
 model Opener {
-  id   String @id @default(cuid())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   name String
 
   concertId String  @map("concert_id")
