@@ -13,6 +13,16 @@ export const findAllConcerts = (profileId: string) => {
 }
 
 
+export const countFavoriteConcerts = (profileId: string) => {
+  return prisma.concert.count({
+    where: { profileId, favoritedAt: { not: null } },
+  })
+}
+
+export const setConcertFavorite = (id: string, favoritedAt: Date | null) => {
+  return prisma.concert.update({ where: { id }, data: { favoritedAt } })
+}
+
 export const createConcert = (data: Prisma.ConcertUncheckedCreateInput) => {
   return prisma.concert.create({ data })
 }

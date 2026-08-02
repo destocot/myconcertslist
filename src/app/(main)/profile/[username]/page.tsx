@@ -11,6 +11,8 @@ import {
   DownloadIcon,
   Settings2Icon,
 } from 'lucide-react'
+import { MAX_FAVORITES } from '@/resources/concerts/constants'
+import { FavoritesSection } from '@/components/profile/favorites-section'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -59,10 +61,15 @@ export default async function Page({ params }: PageProps) {
   })
 
   const birthdayDisplay = profile.birthday
-    ? profile.birthday.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    ? profile.birthday.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
     : null
 
   const genderDisplay = profile.gender ? (GENDER_LABELS[profile.gender] ?? null) : null
+
+  const favorites = concerts
+    .filter((c) => c.favoritedAt)
+    .sort((a, b) => +new Date(a.favoritedAt!) - +new Date(b.favoritedAt!))
+    .slice(0, MAX_FAVORITES)
 
   const lastConcert = concerts
     .filter((c) => c.status === 'confirmed' && new Date(c.performedAt) < now)
@@ -154,6 +161,13 @@ export default async function Page({ params }: PageProps) {
             />
           </div>
 
+          {(favorites.length > 0 || isOwner) && (
+            <>
+              <Separator className='my-5' />
+              <FavoritesSection favorites={favorites} isOwner={isOwner} />
+            </>
+          )}
+
           {lastConcert && (
             <>
               <Separator className='my-5' />
@@ -198,7 +212,7 @@ export default async function Page({ params }: PageProps) {
     </div>
   )
 }
-
+  
 const StatCard = ({
   icon,
   label,

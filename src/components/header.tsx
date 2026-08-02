@@ -11,10 +11,13 @@ export const Header = async () => {
   return (
     <header className='bg-primary text-primary-foreground'>
       <div className='mx-auto flex h-14 max-w-4xl items-center justify-between px-4'>
-        <div className='flex items-center gap-2'>
+        <Link
+          href='/'
+          className='hover:text-primary-foreground/80 flex items-center gap-2 transition-colors'
+        >
           <TicketIcon className='h-5 w-5' />
           <span className='text-lg font-bold tracking-tight'>MyConcertList</span>
-        </div>
+        </Link>
         {session?.user.username ? (
           <div className='flex items-center gap-4'>
             <Link

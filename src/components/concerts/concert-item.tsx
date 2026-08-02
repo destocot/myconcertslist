@@ -15,7 +15,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import type { ConcertInput } from '@/resources/concerts/validators'
-import { MapPinIcon, CalendarIcon, PencilIcon, Trash2Icon, CheckCheckIcon } from 'lucide-react'
+import { MapPinIcon, CalendarIcon, PencilIcon, Trash2Icon, CheckCheckIcon, StarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ConcertItemProps {
@@ -25,6 +25,7 @@ interface ConcertItemProps {
   onUpdate?: (id: string, data: ConcertInput) => Promise<void>
   onDelete?: (id: string) => Promise<void>
   onConfirm?: (id: string) => Promise<void>
+  onToggleFavorite?: (id: string) => Promise<void>
 }
 
 export const ConcertItem = ({
@@ -34,6 +35,7 @@ export const ConcertItem = ({
   onUpdate,
   onDelete,
   onConfirm,
+  onToggleFavorite,
 }: ConcertItemProps) => {
   const date = new Date(concert.performedAt)
   const formattedDate = date.toLocaleDateString('en-US', {
@@ -96,6 +98,29 @@ export const ConcertItem = ({
           </span>
         </div>
       </div>
+
+      {(concert.favoritedAt || onToggleFavorite) && (
+        <div className='shrink-0'>
+          {onToggleFavorite ? (
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() => onToggleFavorite(concert.id)}
+              title={concert.favoritedAt ? 'Remove from favorites' : 'Add to favorites'}
+              className={cn(
+                !concert.favoritedAt &&
+                  'opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100',
+              )}
+            >
+              <StarIcon
+                className={cn('text-primary', concert.favoritedAt && 'fill-current')}
+              />
+            </Button>
+          ) : (
+            <StarIcon className='text-primary h-4 w-4 fill-current' />
+          )}
+        </div>
+      )}
 
       {(showConfirm || onUpdate || onDelete) && (
         <div className='flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100'>

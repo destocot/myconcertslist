@@ -25,12 +25,23 @@ export const updateConcertAction = async (id: string, input: unknown) => {
     })
   }
 
+  const performedAt = new Date(
+    `${data.performedAt}T${data.time || '00:00'}:00.000Z`,
+  )
+
+  const today = new Date()
+  today.setUTCHours(0, 0, 0, 0)
+
+  // favorites are past-concerts-only — drop it if this edit moves it out of the past
+  const leavesPast = data.status !== 'confirmed' || performedAt >= today
+
   revalidatePath('/')
   return updateConcert(id, {
     headliner: data.headliner,
     tourName: data.tourName || null,
     venue: data.venue || null,
-    performedAt: new Date(`${data.performedAt}T${data.time || '00:00'}:00.000Z`),
+    performedAt,
     status: data.status,
+    favoritedAt: leavesPast ? null : undefined,
   })
 }

@@ -10,6 +10,7 @@ import { concertKeys } from '@/resources/concerts/keys'
 import { createConcertAction } from '@/resources/concerts/actions/create-concert'
 import { updateConcertAction } from '@/resources/concerts/actions/update-concert'
 import { removeConcertAction } from '@/resources/concerts/actions/remove-concert'
+import { toggleFavoriteAction } from '@/resources/concerts/actions/toggle-favorite'
 import type { ConcertInput } from '@/resources/concerts/validators'
 import { toast } from 'sonner'
 import { PlusIcon, Music2Icon } from 'lucide-react'
@@ -84,6 +85,21 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
     onError: () => toast.error('Failed to remove concert'),
   })
 
+  const favoriteMutation = useMutation({
+    mutationFn: (id: string) => toggleFavoriteAction(id),
+    onSuccess: (result) => {
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+      toast.success(
+        result.favorited ? 'Added to favorites' : 'Removed from favorites',
+      )
+      invalidate()
+    },
+    onError: () => toast.error('Failed to update favorite'),
+  })
+
   const handleCreate = async (data: ConcertInput) => {
     await createMutation.mutateAsync(data)
   }
@@ -94,6 +110,10 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
 
   const handleDelete = async (id: string) => {
     await deleteMutation.mutateAsync(id)
+  }
+
+  const handleToggleFavorite = async (id: string) => {
+    await favoriteMutation.mutateAsync(id)
   }
 
   const handleConfirm = async (id: string) => {
@@ -179,6 +199,7 @@ export const ConcertList = ({ isOwner, username, displayUsername }: ConcertListP
                 forceIsPast
                 onUpdate={isOwner ? handleUpdate : undefined}
                 onDelete={isOwner ? handleDelete : undefined}
+                onToggleFavorite={isOwner ? handleToggleFavorite : undefined}
               />
             </TabsContent>
             <TabsContent value='maybe'>
@@ -214,6 +235,7 @@ interface ConcertTabPanelProps {
   onUpdate?: (id: string, data: ConcertInput) => Promise<void>
   onDelete?: (id: string) => Promise<void>
   onConfirm?: (id: string) => Promise<void>
+  onToggleFavorite?: (id: string) => Promise<void>
 }
 
 const ConcertTabPanel = ({
@@ -225,6 +247,7 @@ const ConcertTabPanel = ({
   onUpdate,
   onDelete,
   onConfirm,
+  onToggleFavorite,
 }: ConcertTabPanelProps) => {
   if (concerts.length === 0) {
     return (
@@ -266,6 +289,7 @@ const ConcertTabPanel = ({
               onUpdate={onUpdate}
               onDelete={onDelete}
               onConfirm={onConfirm}
+              onToggleFavorite={onToggleFavorite}
             />
           </Fragment>
         )

@@ -104,10 +104,11 @@ model Concert {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   headliner   String
-  tourName    String?  @map("tour_name")
+  tourName    String?   @map("tour_name")
   venue       String?
-  performedAt DateTime @map("performed_at")
-  status      String   @default("confirmed")
+  performedAt DateTime  @map("performed_at")
+  status      String    @default("confirmed")
+  favoritedAt DateTime? @map("favorited_at")
 
   profileId String   @map("profile_id")
   profile   Profile  @relation(fields: [profileId], references: [id])
