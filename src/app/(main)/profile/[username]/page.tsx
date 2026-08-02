@@ -141,6 +141,53 @@ export default async function Page({ params }: PageProps) {
             </div>
           </div>
 
+          {lastConcert && (
+            <>
+              <Separator className='my-5' />
+              <div className='grid grid-cols-2 gap-3'>
+                <div className='bg-muted/40 border-border relative overflow-hidden rounded-lg border p-4'>
+                  <div className='bg-primary absolute top-0 left-0 h-full w-1' />
+                  <p className='text-muted-foreground mb-2 text-xs font-medium uppercase tracking-widest'>Last Show</p>
+                  <p className='truncate text-base font-bold leading-tight'>{lastConcert.headliner}</p>
+                  {lastConcert.tourName && (
+                    <p className='text-primary mt-0.5 truncate text-xs'>{lastConcert.tourName}</p>
+                  )}
+                  <p className='text-muted-foreground mt-2 truncate text-xs'>
+                    {new Date(lastConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
+                    {lastConcert.venue && ` · ${lastConcert.venue}`}
+                  </p>
+                </div>
+                {nextConcert ? (
+                  <div className='border-primary/30 bg-primary/5 relative overflow-hidden rounded-lg border p-4'>
+                    <div className='bg-primary absolute top-0 left-0 h-full w-1' />
+                    <p className='text-primary mb-2 text-xs font-medium uppercase tracking-widest'>Next Show</p>
+                    <p className='truncate text-base font-bold leading-tight'>{nextConcert.headliner}</p>
+                    {nextConcert.tourName && (
+                      <p className='text-primary mt-0.5 truncate text-xs'>{nextConcert.tourName}</p>
+                    )}
+                    <p className='text-muted-foreground mt-2 truncate text-xs'>
+                      {new Date(nextConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
+                      {nextConcert.venue && ` · ${nextConcert.venue}`}
+                    </p>
+                  </div>
+                ) : (
+                  <div className='border-border relative overflow-hidden rounded-lg border border-dashed p-4 flex flex-col items-center justify-center text-center'>
+                    <p className='text-2xl mb-1'>🎟️</p>
+                    <p className='text-muted-foreground text-xs font-medium'>No upcoming shows</p>
+                    <p className='text-muted-foreground/60 text-xs mt-0.5'>Time to find your next concert</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {(favorites.length > 0 || isOwner) && (
+            <>
+              <Separator className='my-5' />
+              <FavoritesSection favorites={favorites} isOwner={isOwner} />
+            </>
+          )}
+
           <Separator className='my-5' />
 
           <div className='grid grid-cols-3 gap-4 text-center'>
@@ -160,53 +207,6 @@ export default async function Page({ params }: PageProps) {
               value={maybe}
             />
           </div>
-
-          {(favorites.length > 0 || isOwner) && (
-            <>
-              <Separator className='my-5' />
-              <FavoritesSection favorites={favorites} isOwner={isOwner} />
-            </>
-          )}
-
-          {lastConcert && (
-            <>
-              <Separator className='my-5' />
-              <div className='grid grid-cols-2 gap-3'>
-                <div className='bg-muted/40 border-border relative overflow-hidden rounded-lg border p-4'>
-                  <div className='bg-primary absolute top-0 left-0 h-full w-1' />
-                  <p className='text-muted-foreground mb-2 text-xs font-medium uppercase tracking-widest'>Last Show</p>
-                  <p className='truncate text-base font-bold leading-tight'>{lastConcert.headliner}</p>
-                  {lastConcert.tourName && (
-                    <p className='text-primary mt-0.5 truncate text-xs'>{lastConcert.tourName}</p>
-                  )}
-                  <p className='text-muted-foreground mt-2 truncate text-xs'>
-                    {new Date(lastConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    {lastConcert.venue && ` · ${lastConcert.venue}`}
-                  </p>
-                </div>
-                {nextConcert ? (
-                  <div className='border-primary/30 bg-primary/5 relative overflow-hidden rounded-lg border p-4'>
-                    <div className='bg-primary absolute top-0 left-0 h-full w-1' />
-                    <p className='text-primary mb-2 text-xs font-medium uppercase tracking-widest'>Next Show</p>
-                    <p className='truncate text-base font-bold leading-tight'>{nextConcert.headliner}</p>
-                    {nextConcert.tourName && (
-                      <p className='text-primary mt-0.5 truncate text-xs'>{nextConcert.tourName}</p>
-                    )}
-                    <p className='text-muted-foreground mt-2 truncate text-xs'>
-                      {new Date(nextConcert.performedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                      {nextConcert.venue && ` · ${nextConcert.venue}`}
-                    </p>
-                  </div>
-                ) : (
-                  <div className='border-border relative overflow-hidden rounded-lg border border-dashed p-4 flex flex-col items-center justify-center text-center'>
-                    <p className='text-2xl mb-1'>🎟️</p>
-                    <p className='text-muted-foreground text-xs font-medium'>No upcoming shows</p>
-                    <p className='text-muted-foreground/60 text-xs mt-0.5'>Time to find your next concert</p>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
         </CardContent>
       </Card>
     </div>
